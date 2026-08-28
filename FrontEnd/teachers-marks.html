@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marks - Student Management System</title>
+    <link rel="stylesheet" href="style_darkMode.css">
+    <script>
+        // Execute immediately on page load to prevent flashing light background
+        (function () {
+            if (localStorage.getItem("darkMode") === "enabled") {
+                document.documentElement.classList.add("dark-mode");
+                document.addEventListener("DOMContentLoaded", function () {
+                    document.body.classList.add("dark-mode");
+                });
+            }
+        })();
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background-color: #1e293b;
+            color: white;
+            padding: 25px 15px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .logo h2 {
+            font-size: 21px;
+        }
+
+        .logo p {
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-top: 5px;
+        }
+
+        .menu {
+            list-style: none;
+        }
+
+        .menu li {
+            margin-bottom: 10px;
+        }
+
+        .menu a {
+            display: block;
+            text-decoration: none;
+            color: #cbd5e1;
+            padding: 13px 15px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .menu a:hover,
+        .menu a.active {
+            background-color: #334155;
+            color: white;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 25px;
+            left: 15px;
+            right: 15px;
+        }
+
+        .logout a {
+            color: #fecaca;
+        }
+
+        /* MAIN */
+        .main {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+
+        /* TOPBAR */
+        .topbar {
+            height: 70px;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .topbar h3 {
+            font-size: 22px;
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #e2e8f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* CONTENT */
+        .content {
+            padding: 30px;
+        }
+
+        .page-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .page-heading h1 {
+            font-size: 28px;
+            margin-bottom: 7px;
+        }
+
+        .page-heading p {
+            color: #64748b;
+        }
+
+        .add-button {
+            border: none;
+            background: #2563eb;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .add-button:hover {
+            background: #1d4ed8;
+        }
+
+        .search-box {
+            background: white;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            outline: none;
+        }
+
+        .action-button {
+            border: none;
+            padding: 7px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 4px;
+        }
+
+        .view-button {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .edit-button {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .delete-button {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* PANEL */
+        .panel {
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .panel-header h3 {
+            font-size: 20px;
+        }
+
+        .refresh-button {
+            border: none;
+            background-color: #2563eb;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .refresh-button:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        thead {
+            background-color: #f1f5f9;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px;
+            font-size: 14px;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .message {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .cancel-btn {
+            background: #94a3b8;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .main {
+                margin-left: 200px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .logout {
+                position: static;
+                margin-top: 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo">
+            <h2>Student Management</h2>
+            <p>System</p>
+        </div>
+
+        <ul class="menu">
+            <li><a href="teachers-dashboard.html">🏠 Dashboard</a></li>
+            <!-- <li><a href="students.html">👨‍🎓 Students</a></li> -->
+            <!-- <li><a href="teachers.html">👨‍🏫 Teachers</a></li> -->
+            <li><a href="teachers-attendance.html">📅 Attendence</a></li>
+            <li><a href="teachers-marks.html" class="active">📝 Marks</a></li>
+            <!-- <li><a href="fees.html">💰 Fees</a></li> -->
+            <li><a href="teachers-report.html">📊 Reports</a></li>
+            <!-- <li><a href="settings.html">⚙ Settings</a></li> -->
+        </ul>
+
+        <div class="logout">
+            <a href="index.html">🚪 Logout</a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <h3>Marks</h3>
+            <div class="admin-profile">
+                <span>Admin</span>
+                <div class="admin-icon">👤</div>
+            </div>
+        </header>
+
+        <!-- CONTENT -->
+        <section class="content">
+            <div class="page-heading">
+                <div>
+                    <h1>Marks</h1>
+                    <p>Manage and view student marks.</p>
+                </div>
+                <button class="add-button" onclick="openAddModal()">➕ Add Marks</button>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Search marks..." onkeyup="filterMarks()">
+            </div>
+
+            <!-- MARKS PANEL -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Marks Records</h3>
+                    <button class="refresh-button" onclick="loadMarks()">🔄 Refresh</button>
+                </div>
+
+                <!-- TABLE -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Marks ID</th>
+                            <th>Student ID</th>
+                            <th>Teacher ID</th>
+                            <th>Subject</th>
+                            <th>Marks</th>
+                            <th>Exam Type</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="marksTable">
+                        <tr>
+                            <td colspan="7" class="message">Loading marks data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- ADD MARKS MODAL -->
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <h2>Add Marks Record</h2>
+            <form id="addMarksForm" onsubmit="event.preventDefault(); addMarks();">
+                <div class="form-group">
+                    <label for="studentId">Student ID</label>
+                    <input type="number" id="studentId" required>
+                </div>
+                <div class="form-group">
+                    <label for="teacherId">Teacher ID</label>
+                    <input type="number" id="teacherId" required>
+                </div>
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="marks">Marks</label>
+                    <input type="number" id="marks" required>
+                </div>
+                <div class="form-group">
+                    <label for="examType">Exam Type</label>
+                    <input type="text" id="examType" placeholder="e.g. Midterm, Final" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="cancel-btn" onclick="closeAddModal()">Cancel</button>
+                    <button type="submit" class="add-button">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        const API_URL = "http://localhost:5000";
+        let marksCache = [];
+        let editingId = null;
+
+        // LOAD MARKS
+        async function loadMarks() {
+            const body = document.getElementById("marksTable");
+
+            try {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="message">Loading marks data...</td>
+                    </tr>
+                `;
+
+                const response = await fetch(`${API_URL}/marks`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                marksCache = data;
+
+                renderTable(data);
+
+            } catch (error) {
+                console.error("Marks Error:", error);
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="message" style="color: #dc2626;">
+                            Failed to load marks data. Please check backend connection.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // RENDER TABLE ROWS WITH ACTION HANDLERS
+        function renderTable(data) {
+            const body = document.getElementById("marksTable");
+
+            if (!Array.isArray(data) || data.length === 0) {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="message">No marks records found.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            body.innerHTML = "";
+            data.forEach(record => {
+                const id = record.Marks_id;
+                body.innerHTML += `
+                    <tr>
+                        <td>${record.Marks_id ?? 'N/A'}</td>
+                        <td>${record.Student_id ?? 'N/A'}</td>
+                        <td>${record.Teacher_id ?? 'N/A'}</td>
+                        <td>${record.Subject ?? 'N/A'}</td>
+                        <td>${record.Marks ?? 'N/A'}</td>
+                        <td>${record.Exam_Type ?? 'N/A'}</td>
+                        <td>
+                            <button class="action-button view-button" onclick="viewMarks(${id})">👁 View</button>
+                            <button class="action-button edit-button" onclick="openEditModal(${id})">✏️ Edit</button>
+                            <button class="action-button delete-button" onclick="deleteMarks(${id})">🗑️ Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // VIEW MARKS
+        function viewMarks(id) {
+            const record = marksCache.find(r => r.Marks_id === id);
+            if (!record) return alert("Record not found.");
+
+            alert(`Marks Record Details:
+------------------------
+Marks ID: ${record.Marks_id}
+Student ID: ${record.Student_id}
+Teacher ID: ${record.Teacher_id}
+Subject: ${record.Subject}
+Marks: ${record.Marks}
+Exam Type: ${record.Exam_Type}`);
+        }
+
+        // EDIT MARKS SETUP
+        function openEditModal(id) {
+            const record = marksCache.find(r => r.Marks_id === id);
+            if (!record) return alert("Record not found.");
+
+            editingId = id;
+            document.getElementById("studentId").value = record.Student_id ?? '';
+            document.getElementById("teacherId").value = record.Teacher_id ?? '';
+            document.getElementById("subject").value = record.Subject ?? '';
+            document.getElementById("marks").value = record.Marks ?? '';
+            document.getElementById("examType").value = record.Exam_Type ?? '';
+
+            document.querySelector("#addModal h2").textContent = "Edit Marks Record";
+            openAddModal();
+        }
+
+        // ADD OR EDIT MARKS SAVE HANDLER
+        async function addMarks() {
+            try {
+                const data = {
+                    Student_id: parseInt(document.getElementById("studentId").value),
+                    Teacher_id: parseInt(document.getElementById("teacherId").value),
+                    Subject: document.getElementById("subject").value,
+                    Marks: parseInt(document.getElementById("marks").value),
+                    Exam_Type: document.getElementById("examType").value
+                };
+
+                const isEdit = editingId !== null;
+                const endpoint = isEdit ? `${API_URL}/marks/${editingId}` : `${API_URL}/marks`;
+                const method = isEdit ? "PUT" : "POST";
+
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error("Request failed");
+
+                const result = await response.json();
+                alert(result.message || (isEdit ? "Record updated successfully" : "Record added successfully"));
+                closeAddModal();
+                loadMarks();
+
+            } catch (error) {
+                console.error("Save Error:", error);
+                alert("Unable to save record");
+            }
+        }
+
+        // DELETE MARKS
+        async function deleteMarks(id) {
+            if (!confirm(`Are you sure you want to delete Marks record #${id}?`)) return;
+
+            try {
+                const response = await fetch(`${API_URL}/marks/${id}`, {
+                    method: "DELETE"
+                });
+
+                if (!response.ok) throw new Error("Delete failed");
+
+                const result = await response.json();
+                alert(result.message || "Record deleted successfully");
+                loadMarks();
+            } catch (error) {
+                console.error("Delete Error:", error);
+                alert("Unable to delete record");
+            }
+        }
+
+        // FILTER MARKS
+        function filterMarks() {
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = marksCache.filter(record =>
+                String(record.Marks_id ?? '').toLowerCase().includes(query) ||
+                String(record.Student_id ?? '').toLowerCase().includes(query) ||
+                String(record.Teacher_id ?? '').toLowerCase().includes(query) ||
+                String(record.Subject ?? '').toLowerCase().includes(query) ||
+                String(record.Marks ?? '').toLowerCase().includes(query) ||
+                String(record.Exam_Type ?? '').toLowerCase().includes(query)
+            );
+            renderTable(filtered);
+        }
+
+        // MODAL CONTROLS
+        function openAddModal() {
+            document.getElementById("addModal").style.display = "flex";
+        }
+
+        function closeAddModal() {
+            editingId = null;
+            document.querySelector("#addModal h2").textContent = "Add Marks Record";
+            document.getElementById("addModal").style.display = "none";
+            document.getElementById("addMarksForm").reset();
+        }
+
+        document.addEventListener("DOMContentLoaded", loadMarks);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Management System</title>
+
+    <!-- CSS File -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style_darkMode.css">
+
+</head>
+<!-- <script>
+    document.getElementById("loginBtn").addEventListener("click", function () {
+        window.location.href = "dashboard.html";
+    });
+</script> -->
+<script>
+    // Execute immediately on page load to prevent flashing light background
+    (function () {
+        if (localStorage.getItem("darkMode") === "enabled") {
+            document.documentElement.classList.add("dark-mode");
+            document.addEventListener("DOMContentLoaded", function () {
+                document.body.classList.add("dark-mode");
+            });
+        }
+    })();
+</script>
+
+
+<body>
+
+
+    <!-- =========================
+         NAVIGATION BAR
+    ========================== -->
+
+    <header class="navbar" id="home">
+
+        <div class="logo-section">
+
+            <div class="logo">
+                🎓
+            </div>
+
+            <div>
+                <h2>SMS</h2>
+
+                <p>
+                    Student Management System
+                </p>
+            </div>
+
+        </div>
+
+
+        <nav>
+
+            <a href="#home">
+                Home
+            </a>
+
+            <a href="#about">
+                About
+            </a>
+
+            <a href="#contact">
+                Contact
+            </a>
+
+            <a href="#login" class="login-nav">
+                Login
+            </a>
+
+        </nav>
+
+    </header>
+
+
+
+    <!-- =========================
+         MAIN CONTAINER
+    ========================== -->
+
+    <main class="main-container">
+
+
+        <!-- =========================
+             LEFT / ABOUT SECTION
+        ========================== -->
+
+        <section class="intro-section" id="about">
+
+            <h1>
+                Student
+                <br>
+                Management System
+            </h1>
+
+
+            <div class="blue-line"></div>
+
+
+            <p class="description">
+
+                A complete solution to manage students,
+                teachers, attendance, classes and academic
+                performance efficiently.
+
+            </p>
+
+
+            <!-- Illustration -->
+
+            <div class="illustration">
+
+                💻
+
+                <div class="graduation-cap">
+                    🎓
+                </div>
+
+            </div>
+
+
+
+            <!-- =========================
+                 FEATURES
+            ========================== -->
+
+            <div class="features">
+
+
+                <!-- Students -->
+
+                <div class="feature" onclick="openFeature('Students')">
+
+                    <div class="feature-icon">
+                        👨‍🎓
+                    </div>
+
+                    <h3>
+                        Students
+                    </h3>
+
+                    <p>
+                        Manage student information
+                    </p>
+
+                </div>
+
+
+
+                <!-- Teachers -->
+
+                <div class="feature" onclick="openFeature('Teachers')">
+
+                    <div class="feature-icon">
+                        👨‍🏫
+                    </div>
+
+                    <h3>
+                        Teachers
+                    </h3>
+
+                    <p>
+                        Manage teacher information
+                    </p>
+
+                </div>
+
+
+
+                <!-- Attendance -->
+
+                <div class="feature" onclick="openFeature('Attendance')">
+
+                    <div class="feature-icon">
+                        📅
+                    </div>
+
+                    <h3>
+                        Attendance
+                    </h3>
+
+                    <p>
+                        Track attendance records
+                    </p>
+
+                </div>
+
+
+
+                <!-- Reports -->
+
+                <div class="feature" onclick="openFeature('Reports')">
+
+                    <div class="feature-icon">
+                        📊
+                    </div>
+
+                    <h3>
+                        Reports
+                    </h3>
+
+                    <p>
+                        View reports and analytics
+                    </p>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =========================
+             LOGIN SECTION
+        ========================== -->
+
+        <section class="login-section" id="login">
+
+
+            <h1>
+                Welcome Back!
+            </h1>
+
+
+            <p class="login-subtitle">
+                Login to access your account
+            </p>
+
+
+
+            <!-- =========================
+                 USER TYPES
+            ========================== -->
+
+            <div class="user-types">
+
+
+                <!-- Admin -->
+
+                <button type="button" class="role-button active" onclick="selectRole(this)">
+
+                    👤 Admin
+
+                </button>
+
+
+
+                <!-- Teacher -->
+
+                <button type="button" class="role-button" onclick="selectRole(this)">
+
+                    👨‍🏫 Teacher
+
+                </button>
+
+
+
+                <!-- Student -->
+
+                <button type="button" class="role-button" onclick="selectRole(this)">
+
+                    👨‍🎓 Student
+
+                </button>
+
+
+            </div>
+
+
+
+            <!-- =========================
+                 LOGIN FORM
+            ========================== -->
+
+            <form onsubmit="loginUser(event)">
+
+
+                <!-- Username -->
+
+                <label for="username">
+
+                    Username / Email
+
+                </label>
+
+
+                <input type="text" id="username" placeholder="Enter your username or email">
+
+
+
+                <!-- Password -->
+
+                <label for="password">
+
+                    Password
+
+                </label>
+
+
+                <input type="password" id="password" placeholder="Enter your password">
+
+
+
+                <!-- =========================
+                     LOGIN OPTIONS
+                ========================== -->
+
+                <div class="login-options">
+
+
+                    <label class="remember">
+
+                        <input type="checkbox">
+
+                        Remember me
+
+                    </label>
+
+
+                    <a href="#" onclick="forgotPassword(event)">
+
+                        Forgot Password?
+
+                    </a>
+
+
+                </div>
+
+
+
+                <!-- Login Button -->
+
+                <button type="submit" class="login-button" id="loginBtn">
+
+                    Login
+
+                </button>
+
+
+            </form>
+
+
+
+            <!-- =========================
+                 REGISTER
+            ========================== -->
+
+            <p class="register">
+
+                Don't have an account?
+
+                <a href="#" onclick="registerUser(event)">
+
+                    Register here
+
+                </a>
+
+            </p>
+
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =========================
+         CONTACT SECTION
+    ========================== -->
+
+    <section id="contact" class="contact-section">
+
+        <h2>
+            Contact Us
+        </h2>
+
+        <p>
+            Email: support@sms.com
+        </p>
+
+        <p>
+            Phone: +91 9876543210
+        </p>
+
+    </section>
+
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+
+        © 2026 Student Management System.
+        All rights reserved.
+
+    </footer>
+
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================== -->
+
+    <!-- <script>
+
+    let selectedRole = "admin";
+
+
+    // ==========================================
+    // SELECT ROLE
+    // ==========================================
+
+    function selectRole(button) {
+
+        const buttons =
+            document.querySelectorAll(".role-button");
+
+        buttons.forEach(function (btn) {
+            btn.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        const roleText =
+            button.textContent.trim().toLowerCase();
+
+        if (roleText.includes("admin")) {
+
+            selectedRole = "admin";
+
+        }
+
+        else if (roleText.includes("teacher")) {
+
+            selectedRole = "teacher";
+
+        }
+
+        else {
+
+            selectedRole = "student";
+
+        }
+
+        console.log(
+            "Selected Role:",
+            selectedRole
+        );
+    }
+
+
+    // ==========================================
+    // LOGIN
+    // ==========================================
+
+    async function loginUser(event) {
+
+        event.preventDefault();
+
+
+        const username =
+            document.getElementById("username")
+                .value
+                .trim();
+
+
+        const password =
+            document.getElementById("password")
+                .value
+                .trim();
+
+
+        if (
+            username === "" ||
+            password === ""
+        ) {
+
+            alert(
+                "Please enter username and password."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            // ==========================================
+            // SEND LOGIN REQUEST
+            // ==========================================
+
+            const response =
+                await fetch(
+                    "http://localhost:5000/login",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            role: selectedRole,
+
+                            username: username,
+
+                            password: password
+
+                        })
+                    }
+                );
+
+
+            // ==========================================
+            // GET SERVER RESPONSE
+            // ==========================================
+
+            const data =
+                await response.json();
+
+
+            console.log(
+                "Login Response:",
+                data
+            );
+
+
+            // ==========================================
+            // LOGIN FAILED
+            // ==========================================
+
+            if (!response.ok) {
+
+                alert(
+                    data.error ||
+                    "Login failed."
+                );
+
+                return;
+            }
+
+
+            // ==========================================
+            // CLEAR OLD USER DATA
+            // ==========================================
+
+            localStorage.removeItem(
+                "studentId"
+            );
+
+            localStorage.removeItem(
+                "teacherId"
+            );
+
+            localStorage.removeItem(
+                "adminId"
+            );
+
+
+            // ==========================================
+            // SAVE ROLE
+            // ==========================================
+
+            localStorage.setItem(
+                "role",
+                data.role
+            );
+
+
+            // ==========================================
+            // SAVE COMPLETE USER OBJECT
+            // ==========================================
+
+            localStorage.setItem(
+                "user",
+                JSON.stringify(data.user)
+            );
+
+
+            // ==========================================
+            // STUDENT LOGIN
+            // ==========================================
+
+            if (
+                data.role === "student"
+            ) {
+
+                /*
+                    IMPORTANT:
+
+                    The Student_id returned by the
+                    backend belongs to the student
+                    who just logged in.
+
+                    We save THAT exact ID.
+
+                    Example:
+
+                    Lakshay -> Student_id 15
+                    Reyansh -> Student_id 16
+
+                    Therefore every student page can
+                    use the correct ID.
+                */
+
+                if (
+                    !data.user ||
+                    !data.user.Student_id
+                ) {
+
+                    console.error(
+                        "Student_id missing from login response:",
+                        data
+                    );
+
+                    alert(
+                        "Student ID was not received from the server."
+                    );
+
+                    return;
+                }
+
+
+                const loggedInStudentId =
+                    Number(
+                        data.user.Student_id
+                    );
+
+
+                localStorage.setItem(
+                    "studentId",
+                    loggedInStudentId
+                );
+
+
+                console.log(
+                    "Logged-in Student ID:",
+                    loggedInStudentId
+                );
+
+            }
+
+
+            // ==========================================
+            // TEACHER LOGIN
+            // ==========================================
+
+            else if (
+                data.role === "teacher"
+            ) {
+
+                if (
+                    data.user &&
+                    data.user.Teacher_id
+                ) {
+
+                    localStorage.setItem(
+                        "teacherId",
+                        data.user.Teacher_id
+                    );
+
+
+                    console.log(
+                        "Logged-in Teacher ID:",
+                        data.user.Teacher_id
+                    );
+                }
+
+            }
+
+
+            // ==========================================
+            // ADMIN LOGIN
+            // ==========================================
+
+            else if (
+                data.role === "admin"
+            ) {
+
+                if (
+                    data.user &&
+                    data.user.Admin_id
+                ) {
+
+                    localStorage.setItem(
+                        "adminId",
+                        data.user.Admin_id
+                    );
+
+
+                    console.log(
+                        "Logged-in Admin ID:",
+                        data.user.Admin_id
+                    );
+                }
+
+            }
+
+
+            // ==========================================
+            // LOGIN SUCCESS
+            // ==========================================
+
+            alert(
+                "Login Successful"
+            );
+
+
+            // ==========================================
+            // REDIRECT
+            // ==========================================
+
+            if (
+                data.role === "admin"
+            ) {
+
+                window.location.href =
+                    "dashboard.html";
+
+            }
+
+            else if (
+                data.role === "teacher"
+            ) {
+
+                window.location.href =
+                    "teachers-dashboard.html";
+
+            }
+
+            else if (
+                data.role === "student"
+            ) {
+
+                window.location.href =
+                    "student-dashboard.html";
+
+            }
+
+            else {
+
+                alert(
+                    "Invalid role."
+                );
+
+            }
+
+        }
+
+
+        catch (error) {
+
+            console.error(
+                "Login Error:",
+                error
+            );
+
+            alert(
+                "Server connection failed"
+            );
+
+        }
+
+    }
+
+
+    // ==========================================
+    // FORGOT PASSWORD
+    // ==========================================
+
+    function forgotPassword(event) {
+
+        event.preventDefault();
+
+        alert(
+            "Forgot Password page will be added here."
+        );
+
+    }
+
+
+    // ==========================================
+    // REGISTER
+    // ==========================================
+
+    function registerUser(event) {
+
+        event.preventDefault();
+
+        alert(
+            "Registration page will be added here."
+        );
+
+    }
+
+
+    // ==========================================
+    // FEATURE CARDS
+    // ==========================================
+
+    function openFeature(featureName) {
+
+        alert(
+            featureName +
+            " section will be added here."
+        );
+
+    }
+
+</script> -->
+    <script>
+        let selectedRole = "admin"; // Default selected role
+
+        // 1. ROLE BUTTON SELECTION
+        function selectRole(button) {
+            const buttons = document.querySelectorAll(".role-button");
+            buttons.forEach(btn => btn.classList.remove("active"));
+
+            button.classList.add("active");
+
+            const roleText = button.textContent.trim().toLowerCase();
+
+            if (roleText.includes("admin")) {
+                selectedRole = "admin";
+            } else if (roleText.includes("teacher")) {
+                selectedRole = "teacher";
+            } else if (roleText.includes("student")) {
+                selectedRole = "student";
+            }
+
+            console.log("Selected Role set to:", selectedRole);
+        }
+
+        // 2. LOGIN USER
+        async function loginUser(event) {
+            event.preventDefault();
+
+            const usernameInput = document.getElementById("username").value.trim();
+            const passwordInput = document.getElementById("password").value.trim();
+
+            if (!usernameInput || !passwordInput) {
+                alert("Please enter both username/email and password.");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:5000/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        role: selectedRole,
+                        username: usernameInput,
+                        password: passwordInput
+                    })
+                });
+
+                const data = await response.json();
+                console.log("Server Login Response:", data);
+
+                if (!response.ok) {
+                    alert(data.error || "Login failed. Check your credentials.");
+                    return;
+                }
+
+                // Clear previous session data
+                localStorage.clear();
+
+                // Save session info
+                localStorage.setItem("role", data.role);
+                localStorage.setItem("user", JSON.stringify(data.user));
+
+                // Redirect based on role
+                if (data.role === "student") {
+                    if (!data.user || !data.user.Student_id) {
+                        alert("Student ID was not returned by server.");
+                        return;
+                    }
+                    localStorage.setItem("studentId", data.user.Student_id);
+                    alert("Student Login Successful!");
+                    window.location.href = "student-dashboard.html";
+
+                } else if (data.role === "teacher") {
+                    if (!data.user || !data.user.Teacher_id) {
+                        alert("Teacher ID was not returned by server. Check column name in DB.");
+                        return;
+                    }
+                    localStorage.setItem("teacherId", data.user.Teacher_id);
+                    alert("Teacher Login Successful!");
+                    window.location.href = "teachers-dashboard.html"; // Ensure this matches your file name!
+
+                } else if (data.role === "admin") {
+                    if (data.user && data.user.Admin_id) {
+                        localStorage.setItem("adminId", data.user.Admin_id);
+                    }
+                    alert("Admin Login Successful!");
+                    window.location.href = "dashboard.html";
+                }
+
+            } catch (error) {
+                console.error("Login Error:", error);
+                alert("Cannot connect to server. Make sure node server is running on port 5000.");
+            }
+        }
+    </script>
+
+
+</body>
+
+</html>

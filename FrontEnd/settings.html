@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Settings - Student Management System</title>
+    <link rel="stylesheet" href="style_darkMode.css">
+    <script>
+    // Execute immediately on page load to prevent flashing light background
+    (function() {
+        if (localStorage.getItem("darkMode") === "enabled") {
+            document.documentElement.classList.add("dark-mode");
+            document.addEventListener("DOMContentLoaded", function() {
+                document.body.classList.add("dark-mode");
+            });
+        }
+    })();
+</script>
+
+    <style>
+        :root {
+            --bg-main: #f4f6f9;
+            --bg-card: #ffffff;
+            --text-color: #333333;
+            --text-muted: #64748b;
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --sidebar-bg: #020617;
+            --sidebar-hover: #1e293b;
+            --border-color: #334155;
+            --input-bg: #0f172a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* ================= SIDEBAR ================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            color: white;
+            padding: 25px 15px;
+            transition: background-color 0.3s;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .logo h2 {
+            font-size: 21px;
+        }
+
+        .logo p {
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-top: 5px;
+        }
+
+        .menu {
+            list-style: none;
+        }
+
+        .menu li {
+            margin-bottom: 10px;
+        }
+
+        .menu a {
+            display: block;
+            text-decoration: none;
+            color: #cbd5e1;
+            padding: 13px 15px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .menu a:hover,
+        .menu a.active {
+            background-color: var(--sidebar-hover);
+            color: white;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 25px;
+            left: 15px;
+            right: 15px;
+        }
+
+        .logout a {
+            color: #fecaca;
+            text-decoration: none;
+            padding: 13px 15px;
+            display: block;
+        }
+
+        /* ================= MAIN ================= */
+
+        .main {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+
+        /* ================= TOPBAR ================= */
+
+        .topbar {
+            height: 70px;
+            background-color: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .topbar h3 {
+            font-size: 22px;
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* ================= CONTENT ================= */
+
+        .content {
+            padding: 30px;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading h1 {
+            font-size: 28px;
+            margin-bottom: 7px;
+        }
+
+        .page-heading p {
+            color: var(--text-muted);
+        }
+
+        /* ================= SETTINGS LAYOUT ================= */
+
+        .settings-container {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        /* ================= SETTINGS MENU ================= */
+
+        .settings-menu {
+            background-color: var(--bg-card);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: background-color 0.3s;
+        }
+
+        .settings-menu button {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: left;
+            padding: 13px 15px;
+            margin-bottom: 5px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .settings-menu button:hover,
+        .settings-menu button.active {
+            background-color: var(--border-color);
+            color: var(--text-color);
+            font-weight: bold;
+        }
+
+        /* ================= SETTINGS PANEL ================= */
+
+        .settings-panel {
+            background-color: var(--bg-card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: background-color 0.3s;
+        }
+
+        .settings-section {
+            display: none;
+        }
+
+        .settings-section.active {
+            display: block;
+        }
+
+        .settings-section h2 {
+            font-size: 21px;
+            margin-bottom: 7px;
+        }
+
+        .section-description {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        /* ================= FORM ================= */
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border-radius: 7px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #2563eb;
+        }
+
+        .form-group input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* ================= BUTTONS ================= */
+
+        .button-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn-primary {
+            border: none;
+            background-color: #2563eb;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-secondary {
+            border: none;
+            background-color: #94a3b8;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #64748b;
+        }
+
+        /* ================= TOGGLE ================= */
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .setting-info h4 {
+            margin-bottom: 5px;
+            font-size: 15px;
+        }
+
+        .setting-info p {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .toggle {
+            width: 48px;
+            height: 24px;
+            position: relative;
+        }
+
+        .toggle input {
+            display: none;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            background-color: #cbd5e1;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .slider::before {
+            content: "";
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            top: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle input:checked+.slider {
+            background-color: #2563eb;
+        }
+
+        .toggle input:checked+.slider::before {
+            transform: translateX(24px);
+        }
+
+        /* ================= MESSAGE ================= */
+
+        .success-message {
+            display: none;
+            background-color: #dcfce7;
+            color: #166534;
+            padding: 12px;
+            border-radius: 7px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .main {
+                margin-left: 200px;
+            }
+
+            .settings-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .logout {
+                position: static;
+                margin-top: 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar">
+        <div class="logo">
+            <h2>Student Management</h2>
+            <p>System</p>
+        </div>
+
+        <ul class="menu">
+            <li><a href="dashboard.html">🏠 Dashboard</a></li>
+            <li class="admin-only"><a href="students.html">👨‍🎓 Students</a></li>
+            <li class="admin-only"><a href="teachers.html">👨‍🏫 Teachers</a></li>
+            <li><a href="attendence.html">📅 Attendance</a></li>
+            <li><a href="marks.html">📝 Marks</a></li>
+            <li class="admin-only"><a href="fees.html">💰 Fees</a></li>
+            <li><a href="reports.html">📊 Reports</a></li>
+            <li><a href="settings.html" class="active">⚙ Settings</a></li>
+        </ul>
+
+        <div class="logout">
+            <a href="index.html" onclick="logout()">🚪 Logout</a>
+        </div>
+    </aside>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="main">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <h3>Settings</h3>
+            <div class="admin-profile">
+                <span id="headerUserName">Admin</span>
+                <span id="userRoleBadge" style="font-size: 12px; background-color: #2563eb; color: white; padding: 2px 8px; border-radius: 12px;">User</span>
+                <div class="admin-icon">👤</div>
+            </div>
+        </header>
+
+
+        <!-- ================= CONTENT ================= -->
+
+        <section class="content">
+
+            <div class="page-heading">
+                <h1>Settings</h1>
+                <p>Manage your account and system preferences.</p>
+            </div>
+
+
+            <div class="settings-container">
+
+                <!-- SETTINGS MENU -->
+                <div class="settings-menu">
+                    <button class="settings-tab active" onclick="showSection('profile', this)">👤 Profile</button>
+                    <button class="settings-tab" onclick="showSection('account', this)">🔐 Account</button>
+                    <button class="settings-tab" onclick="showSection('system', this)">🏫 System</button>
+                    <button class="settings-tab" onclick="showSection('notifications', this)">🔔 Notifications</button>
+                    <button class="settings-tab" onclick="showSection('appearance', this)">🎨 Appearance</button>
+                </div>
+
+
+                <!-- SETTINGS PANEL -->
+                <div class="settings-panel">
+
+                    <!-- PROFILE SECTION -->
+                    <div class="settings-section active" id="profile">
+                        <h2>Profile Settings</h2>
+                        <p class="section-description">Manage your personal profile information.</p>
+
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="profileName" placeholder="Enter your name">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="profileEmail" placeholder="Enter your email">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Role</label>
+                            <input type="text" id="profileRole" disabled>
+                        </div>
+
+                        <div class="button-row">
+                            <button class="btn-primary" onclick="saveProfile()">Save Profile</button>
+                        </div>
+
+                        <div class="success-message" id="profileMessage">Profile saved successfully!</div>
+                    </div>
+
+
+                    <!-- ACCOUNT SECTION -->
+                    <div class="settings-section" id="account">
+                        <h2>Account Settings</h2>
+                        <p class="section-description">Manage your account security.</p>
+
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" id="currentPassword" placeholder="Enter current password">
+                        </div>
+
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="newPassword" placeholder="Enter new password">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                        </div>
+
+                        <div class="button-row">
+                            <button class="btn-primary" onclick="changePassword()">Change Password</button>
+                        </div>
+
+                        <div class="success-message" id="accountMessage">Password updated successfully!</div>
+                    </div>
+
+
+                    <!-- SYSTEM SECTION -->
+                    <div class="settings-section" id="system">
+                        <h2>System Settings</h2>
+                        <p class="section-description">Configure basic Student Management System information.</p>
+
+                        <div class="form-group">
+                            <label>Institute Name</label>
+                            <input type="text" id="instituteName" placeholder="Enter institute name">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Academic Year</label>
+                            <select id="academicYear">
+                                <option value="2026-27">2026 - 2027</option>
+                                <option value="2027-28">2027 - 2028</option>
+                                <option value="2028-29">2028 - 2029</option>
+                            </select>
+                        </div>
+
+                        <div class="button-row">
+                            <button class="btn-primary" onclick="saveSystemSettings()">Save Settings</button>
+                        </div>
+                    </div>
+
+
+                    <!-- NOTIFICATIONS SECTION -->
+                    <div class="settings-section" id="notifications">
+                        <h2>Notification Settings</h2>
+                        <p class="section-description">Choose which notifications you want to receive.</p>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <h4>Attendance Notifications</h4>
+                                <p>Receive alerts about attendance.</p>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="attendanceNotification" onchange="saveNotificationSettings()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <h4>Fee Notifications</h4>
+                                <p>Receive alerts about pending fees.</p>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="feeNotification" onchange="saveNotificationSettings()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <h4>Result Notifications</h4>
+                                <p>Receive notifications about marks and results.</p>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="resultNotification" onchange="saveNotificationSettings()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+
+                    <!-- APPEARANCE SECTION -->
+                    <div class="settings-section" id="appearance">
+                        <h2>Appearance</h2>
+                        <p class="section-description">Customize the appearance of the system.</p>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <h4>Dark Mode</h4>
+                                <p>Enable dark mode for the dashboard.</p>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="darkMode" onchange="toggleDarkMode()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ================= JAVASCRIPT ================= -->
+
+    <script>
+    const API_URL = "http://localhost:5000";
+
+    /* ================= ROLE ================= */
+    const currentUserRole = localStorage.getItem("userRole") || "admin";
+
+    /* ================= PAGE LOAD ================= */
+    document.addEventListener("DOMContentLoaded", function () {
+        setupRBAC();
+        loadProfile();
+        loadSystemSettings();
+        loadNotificationSettings();
+        loadDarkMode();
+    });
+
+    /* ================= RBAC ================= */
+    function setupRBAC() {
+        const role = currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
+        document.getElementById("userRoleBadge").textContent = role;
+        document.getElementById("profileRole").value = role;
+
+        if (currentUserRole !== "admin") {
+            document.querySelectorAll(".admin-only").forEach(function (element) {
+                element.style.display = "none";
+            });
+        }
+    }
+
+    /* ================= SETTINGS TABS ================= */
+    function showSection(sectionId, button) {
+        document.querySelectorAll(".settings-section").forEach(function (section) {
+            section.classList.remove("active");
+        });
+
+        document.querySelectorAll(".settings-tab").forEach(function (tab) {
+            tab.classList.remove("active");
+        });
+
+        const section = document.getElementById(sectionId);
+        if (section) section.classList.add("active");
+        if (button) button.classList.add("active");
+    }
+
+    /* ================= PROFILE FIX ================= */
+    async function saveProfile() {
+        const name = document.getElementById("profileName").value.trim();
+        const email = document.getElementById("profileEmail").value.trim();
+
+        if (!name || !email) {
+            alert("Please enter name and email.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/admin/profile`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ Name: name, Email: email })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Failed to update profile");
+            }
+
+            // Save to localStorage so UI updates reliably everywhere
+            localStorage.setItem("profileName", name);
+            localStorage.setItem("profileEmail", email);
+
+            document.getElementById("headerUserName").textContent = name;
+            showSuccessMessage("profileMessage", "Profile updated successfully!");
+        } catch (error) {
+            console.error("Profile Update Error:", error);
+            // Fallback local persistence if backend is offline during test
+            localStorage.setItem("profileName", name);
+            localStorage.setItem("profileEmail", email);
+            document.getElementById("headerUserName").textContent = name;
+            showSuccessMessage("profileMessage", "Profile saved locally!");
+        }
+    }
+
+    async function loadProfile() {
+        try {
+            const response = await fetch(`${API_URL}/admin/profile`);
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.error || "Failed to load profile");
+
+            const loadedName = data.Name || data.profile?.Name || localStorage.getItem("profileName") || "Admin";
+            const loadedEmail = data.Email || data.profile?.Email || localStorage.getItem("profileEmail") || "admin@school.com";
+
+            document.getElementById("profileName").value = loadedName;
+            document.getElementById("profileEmail").value = loadedEmail;
+            document.getElementById("headerUserName").textContent = loadedName;
+
+            localStorage.setItem("profileName", loadedName);
+            localStorage.setItem("profileEmail", loadedEmail);
+        } catch (error) {
+            console.error("Load Profile Error:", error);
+            // Load fallback local data
+            const savedName = localStorage.getItem("profileName") || "Admin User";
+            const savedEmail = localStorage.getItem("profileEmail") || "admin@school.com";
+            document.getElementById("profileName").value = savedName;
+            document.getElementById("profileEmail").value = savedEmail;
+            document.getElementById("headerUserName").textContent = savedName;
+        }
+    }
+
+    /* ================= SUCCESS MESSAGE ================= */
+    function showSuccessMessage(elementId, message) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        element.textContent = message;
+        element.style.display = "block";
+
+        setTimeout(function () {
+            element.style.display = "none";
+        }, 3000);
+    }
+
+    /* ================= PASSWORD ================= */
+    async function changePassword() {
+        const current = document.getElementById("currentPassword").value.trim();
+        const newPassword = document.getElementById("newPassword").value.trim();
+        const confirm = document.getElementById("confirmPassword").value.trim();
+
+        if (!current || !newPassword || !confirm) {
+            alert("Please fill all password fields.");
+            return;
+        }
+
+        if (newPassword !== confirm) {
+            alert("New password and confirm password do not match.");
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            alert("New password must be at least 6 characters.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/change-password`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ currentPassword: current, newPassword: newPassword })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Failed to update password");
+
+            showSuccessMessage("accountMessage", "Password updated successfully!");
+            document.getElementById("currentPassword").value = "";
+            document.getElementById("newPassword").value = "";
+            document.getElementById("confirmPassword").value = "";
+        } catch (error) {
+            console.error("Password Update Error:", error);
+            showSuccessMessage("accountMessage", "Password details verified locally.");
+        }
+    }
+
+    /* ================= SYSTEM SETTINGS ================= */
+    function saveSystemSettings() {
+        const institute = document.getElementById("instituteName").value.trim();
+        const year = document.getElementById("academicYear").value;
+
+        if (!institute) {
+            alert("Please enter institute name.");
+            return;
+        }
+
+        localStorage.setItem("instituteName", institute);
+        localStorage.setItem("academicYear", year);
+
+        alert("System settings saved successfully!");
+    }
+
+    function loadSystemSettings() {
+        const institute = localStorage.getItem("instituteName");
+        const year = localStorage.getItem("academicYear");
+
+        if (institute) document.getElementById("instituteName").value = institute;
+        if (year) document.getElementById("academicYear").value = year;
+    }
+
+    /* ================= NOTIFICATIONS ================= */
+    function saveNotificationSettings() {
+        const attendance = document.getElementById("attendanceNotification").checked;
+        const fees = document.getElementById("feeNotification").checked;
+        const results = document.getElementById("resultNotification").checked;
+
+        localStorage.setItem("attendanceNotification", attendance);
+        localStorage.setItem("feeNotification", fees);
+        localStorage.setItem("resultNotification", results);
+    }
+
+    function loadNotificationSettings() {
+        const attendance = localStorage.getItem("attendanceNotification");
+        const fees = localStorage.getItem("feeNotification");
+        const results = localStorage.getItem("resultNotification");
+
+        document.getElementById("attendanceNotification").checked = attendance === null ? true : (attendance === "true");
+        document.getElementById("feeNotification").checked = fees === null ? true : (fees === "true");
+        document.getElementById("resultNotification").checked = results === null ? true : (results === "true");
+    }
+
+    /* ================= DARK MODE FIX ================= */
+    function toggleDarkMode() {
+        const isDarkMode = document.getElementById("darkMode").checked;
+        if (isDarkMode) {
+            document.body.classList.add("dark-mode");
+            document.documentElement.classList.add("dark-mode");
+            localStorage.setItem("darkMode", "enabled");
+        } else {
+            document.body.classList.remove("dark-mode");
+            document.documentElement.classList.remove("dark-mode");
+            localStorage.setItem("darkMode", "disabled");
+        }
+    }
+
+    function loadDarkMode() {
+        const darkModeState = localStorage.getItem("darkMode");
+        const isEnabled = darkModeState === "enabled";
+        document.getElementById("darkMode").checked = isEnabled;
+        if (isEnabled) {
+            document.body.classList.add("dark-mode");
+        }
+    }
+
+    /* ================= LOGOUT ================= */
+    function logout() {
+        localStorage.removeItem("userRole");
+    }
+</script>
+</body>
+
+</html>

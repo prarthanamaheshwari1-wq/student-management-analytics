@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile - Student Management System</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #1e293b;
+            color: white;
+            padding-top: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 22px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 14px 25px;
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #334155;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 240px;
+            padding: 30px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .topbar h1 {
+            font-size: 28px;
+        }
+
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        /* Profile Grid Layout */
+        .profile-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 25px;
+        }
+
+        .profile-left,
+        .profile-right {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .profile-left {
+            text-align: center;
+        }
+
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            margin: 0 auto 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 45px;
+            color: #64748b;
+        }
+
+        .profile-left h2 {
+            margin-bottom: 8px;
+        }
+
+        .profile-left p {
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 7px 18px;
+            border-radius: 20px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .profile-right h2 {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 12px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .detail {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 7px;
+        }
+
+        .detail label {
+            display: block;
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .detail span {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+        }
+
+        .error {
+            color: #dc2626;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 800px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .main {
+                margin-left: 200px;
+            }
+
+            .profile-container {
+                grid-template-columns: 1fr;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>SMS</h2>
+        <a href="student-dashboard.html">Dashboard</a>
+        <a href="student-profile.html" class="active">My Profile</a>
+        <a href="student-attendance.html">Attendance</a>
+        <a href="student-marks.html">Marks & Reports</a>
+        <a href="student-fees.html">Fees</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="topbar">
+            <h1>My Profile</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div id="profileContent">
+            <div class="loading">
+                Loading student profile...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:5000";
+
+        // Safely retrieve user data saved by index.html login script
+        const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+        // Robust fallback chain: explicit storage -> capitalized DB field -> lowercase DB field
+        const studentId = localStorage.getItem("studentId") || storedUser.Student_id || storedUser.student_id;
+
+        async function loadStudentProfile() {
+            // 1. If no student is logged in, redirect to login page immediately
+            if (!studentId || studentId === "undefined" || studentId === "null") {
+                alert("No active session found. Please log in.");
+                window.location.href = "index.html";
+                return;
+            }
+
+            try {
+                // Fetch the logged-in student's exact endpoint
+                const response = await fetch(`${API_URL}/students/${studentId}`);
+
+                if (!response.ok) {
+                    throw new Error(`Student ID #${studentId} not found in database.`);
+                }
+
+                const student = await response.json();
+
+                // 2. Map fields dynamically across PascalCase and camelCase keys
+                const firstName = student.First_Name || student.first_name || student.FirstName || "N/A";
+                const lastName = student.Last_Name || student.last_name || student.LastName || "";
+                const rollNo = student.Roll_No || student.roll_no || student.RollNo || "N/A";
+                const displayId = student.Student_id || student.student_id || studentId;
+                const className = student.Class || student.class || "N/A";
+                const section = student.Section || student.section || "N/A";
+                const gender = student.Gender || student.gender || "N/A";
+                const dob = student.DOB || student.dob || "N/A";
+                const phone = student.Phone_No || student.phone_no || student.phone || "N/A";
+                const email = student.Email || student.email || "N/A";
+                const admissionDate = student.Admission_Date || student.admission_date || "N/A";
+                const address = student.Address || student.address || "N/A";
+
+                // 3. Render student details into the UI
+                document.getElementById("profileContent").innerHTML = `
+            <div class="profile-container">
+                <div class="profile-left">
+                    <div class="profile-image">👤</div>
+                    <h2>${firstName} ${lastName}</h2>
+                    <p>Roll No: ${rollNo}</p>
+                    <p>Student ID: ${displayId}</p>
+                    <span class="status">Active</span>
+                </div>
+
+                <div class="profile-right">
+                    <h2>Personal Information</h2>
+                    <div class="details-grid">
+                        <div class="detail"><label>First Name</label><span>${firstName}</span></div>
+                        <div class="detail"><label>Last Name</label><span>${lastName || "N/A"}</span></div>
+                        <div class="detail"><label>Roll Number</label><span>${rollNo}</span></div>
+                        <div class="detail"><label>Class</label><span>${className}</span></div>
+                        <div class="detail"><label>Section</label><span>${section}</span></div>
+                        <div class="detail"><label>Gender</label><span>${gender}</span></div>
+                        <div class="detail"><label>Date of Birth</label><span>${dob}</span></div>
+                        <div class="detail"><label>Phone Number</label><span>${phone}</span></div>
+                        <div class="detail"><label>Email</label><span>${email}</span></div>
+                        <div class="detail"><label>Admission Date</label><span>${admissionDate}</span></div>
+                        <div class="detail" style="grid-column: 1 / -1;"><label>Address</label><span>${address}</span></div>
+                    </div>
+                </div>
+            </div>
+        `;
+            } catch (error) {
+                console.error("Error loading profile:", error);
+                document.getElementById("profileContent").innerHTML = `
+            <div class="error">
+                Unable to load student profile for Student ID #${studentId}. 
+                <br>Make sure the backend server is running on ${API_URL}.
+            </div>
+        `;
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
+
+        loadStudentProfile();
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Attendance - Student Management System</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            color: #333;
+        }
+
+
+        /* ==============================
+           SIDEBAR
+        ============================== */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #1e293b;
+            color: white;
+            padding-top: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 22px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 14px 25px;
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #334155;
+        }
+
+
+        /* ==============================
+           MAIN CONTENT
+        ============================== */
+
+        .main {
+            margin-left: 240px;
+            padding: 30px;
+        }
+
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .topbar h1 {
+            font-size: 28px;
+        }
+
+
+        /* ==============================
+           LOGOUT BUTTON
+        ============================== */
+
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+
+        /* ==============================
+           STUDENT INFO
+        ============================== */
+
+        .student-info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+        }
+
+        .student-info h2 {
+            margin-bottom: 8px;
+        }
+
+        .student-info p {
+            color: #64748b;
+        }
+
+
+        /* ==============================
+           ATTENDANCE CARDS
+        ============================== */
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h3 {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .card .value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+
+        /* ==============================
+           PROGRESS SECTION
+        ============================== */
+
+        .attendance-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .attendance-section h2 {
+            margin-bottom: 20px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 25px;
+            background: #e2e8f0;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #22c55e;
+            transition: width 0.5s ease;
+        }
+
+        .percentage {
+            margin-top: 12px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            background: #f8fafc;
+        }
+
+
+        /* ==============================
+           LOADING / ERROR
+        ============================== */
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+        }
+
+        .error {
+            color: #dc2626;
+            text-align: center;
+            padding: 20px;
+        }
+
+
+        /* ==============================
+           RESPONSIVE
+        ============================== */
+
+        @media (max-width: 1000px) {
+
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 800px) {
+
+            .sidebar {
+                width: 200px;
+            }
+
+            .main {
+                margin-left: 200px;
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ==============================
+         SIDEBAR
+    ============================== -->
+
+    <div class="sidebar">
+
+        <h2>SMS</h2>
+
+        <a href="student-dashboard.html">
+            Dashboard
+        </a>
+
+        <a href="student-profile.html">
+            My Profile
+        </a>
+
+        <a href="student-attendance.html" class="active">
+            Attendance
+        </a>
+
+        <a href="student-marks.html">
+            Marks & Reports
+        </a>
+
+        <a href="student-fees.html">
+            Fees
+        </a>
+
+        <!-- <a href="student-settings.html">
+            Settings
+        </a> -->
+
+    </div>
+
+
+    <!-- ==============================
+         MAIN CONTENT
+    ============================== -->
+
+    <div class="main">
+
+
+        <!-- TOPBAR -->
+
+        <div class="topbar">
+
+            <h1>My Attendance</h1>
+
+            <button
+                class="logout-btn"
+                onclick="logout()">
+
+                Logout
+
+            </button>
+
+        </div>
+
+
+        <!-- ==============================
+             STUDENT INFORMATION
+        ============================== -->
+
+        <div class="student-info">
+
+            <h2 id="studentName">
+                Loading...
+            </h2>
+
+            <p id="studentDetails">
+                Loading student information...
+            </p>
+
+        </div>
+
+
+        <!-- ==============================
+             ATTENDANCE CARDS
+        ============================== -->
+
+        <div class="cards">
+
+
+            <!-- TOTAL WORKING DAYS -->
+
+            <div class="card">
+
+                <h3>
+                    Total Working Days
+                </h3>
+
+                <div
+                    class="value"
+                    id="totalWorkingDays">
+
+                    -
+
+                </div>
+
+            </div>
+
+
+            <!-- DAYS PRESENT -->
+
+            <div class="card">
+
+                <h3>
+                    Days Present
+                </h3>
+
+                <div
+                    class="value"
+                    id="daysPresent">
+
+                    -
+
+                </div>
+
+            </div>
+
+
+            <!-- DAYS ABSENT -->
+
+            <div class="card">
+
+                <h3>
+                    Days Absent
+                </h3>
+
+                <div
+                    class="value"
+                    id="daysAbsent">
+
+                    -
+
+                </div>
+
+            </div>
+
+
+            <!-- ATTENDANCE PERCENTAGE -->
+
+            <div class="card">
+
+                <h3>
+                    Attendance Percentage
+                </h3>
+
+                <div
+                    class="value"
+                    id="attendancePercentage">
+
+                    -
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==============================
+             ATTENDANCE OVERVIEW
+        ============================== -->
+
+        <div class="attendance-section">
+
+            <h2>
+                Attendance Overview
+            </h2>
+
+
+            <div class="progress-container">
+
+                <div
+                    class="progress-bar"
+                    id="progressBar">
+                </div>
+
+            </div>
+
+
+            <div
+                class="percentage"
+                id="percentageText">
+
+                Attendance: -
+
+            </div>
+
+
+            <div
+                class="message"
+                id="attendanceMessage">
+
+                Loading attendance status...
+
+            </div>
+
+        </div>
+
+
+        <!-- ==============================
+             ERROR MESSAGE
+        ============================== -->
+
+        <div id="pageMessage"></div>
+
+
+    </div>
+
+
+    <script>
+
+
+        // ==========================================
+        // BACKEND URL
+        // ==========================================
+
+        const API_URL =
+            "http://localhost:5000";
+
+
+        // ==========================================
+        // STUDENT ID
+        // ==========================================
+
+        const studentId =
+            localStorage.getItem("studentId") || 1;
+
+
+        console.log(
+            "Student ID:",
+            studentId
+        );
+
+
+        // ==========================================
+        // LOAD STUDENT INFORMATION
+        // ==========================================
+
+        async function loadStudentInfo() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/students/${studentId}`
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Unable to fetch student"
+                    );
+
+                }
+
+
+                const student =
+                    await response.json();
+
+
+                console.log(
+                    "Student Information:",
+                    student
+                );
+
+
+                document.getElementById(
+                    "studentName"
+                ).textContent =
+
+                    `${student.First_Name || ""} ${student.Last_Name || ""}`;
+
+
+                document.getElementById(
+                    "studentDetails"
+                ).textContent =
+
+                    `Roll No: ${student.Roll_No || "N/A"} | Class: ${student.Class || "N/A"} | Section: ${student.Section || "N/A"}`;
+
+            }
+
+
+            catch (error) {
+
+                console.error(
+                    "Student Information Error:",
+                    error
+                );
+
+
+                document.getElementById(
+                    "studentName"
+                ).textContent =
+                    "Unable to load student";
+
+
+                document.getElementById(
+                    "studentDetails"
+                ).textContent =
+                    "Please check the backend server.";
+
+            }
+
+        }
+
+
+        // ==========================================
+        // LOAD ATTENDANCE
+        // ==========================================
+
+        async function loadAttendance() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/attendance/metrics?student_id=${studentId}`
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Unable to fetch attendance"
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    "Attendance Data:",
+                    data
+                );
+
+
+                // ==========================================
+                // TOTAL WORKING DAYS
+                // ==========================================
+
+                const totalWorkingDays =
+                    Number(
+                        data.totalWorkingDays
+                    ) || 0;
+
+
+                // ==========================================
+                // DAYS PRESENT
+                // ==========================================
+
+                const daysPresent =
+                    Number(
+                        data.daysPresent
+                    ) || 0;
+
+
+                // ==========================================
+                // DAYS ABSENT
+                // ==========================================
+
+                const daysAbsent =
+                    Math.max(
+                        totalWorkingDays -
+                        daysPresent,
+                        0
+                    );
+
+
+                // ==========================================
+                // CALCULATE ATTENDANCE PERCENTAGE
+                // ==========================================
+
+                let attendancePercentage = 0;
+
+
+                if (
+                    totalWorkingDays > 0
+                ) {
+
+                    attendancePercentage =
+                        (
+                            daysPresent /
+                            totalWorkingDays
+                        ) * 100;
+
+                }
+
+
+                // Round to 2 decimal places
+
+                attendancePercentage =
+                    Number(
+                        attendancePercentage.toFixed(2)
+                    );
+
+
+                // ==========================================
+                // DEBUG INFORMATION
+                // ==========================================
+
+                console.log(
+                    "Total Working Days:",
+                    totalWorkingDays
+                );
+
+                console.log(
+                    "Days Present:",
+                    daysPresent
+                );
+
+                console.log(
+                    "Days Absent:",
+                    daysAbsent
+                );
+
+                console.log(
+                    "Calculated Attendance:",
+                    attendancePercentage + "%"
+                );
+
+
+                // ==========================================
+                // DISPLAY TOTAL WORKING DAYS
+                // ==========================================
+
+                document.getElementById(
+                    "totalWorkingDays"
+                ).textContent =
+                    totalWorkingDays;
+
+
+                // ==========================================
+                // DISPLAY DAYS PRESENT
+                // ==========================================
+
+                document.getElementById(
+                    "daysPresent"
+                ).textContent =
+                    daysPresent;
+
+
+                // ==========================================
+                // DISPLAY DAYS ABSENT
+                // ==========================================
+
+                document.getElementById(
+                    "daysAbsent"
+                ).textContent =
+                    daysAbsent;
+
+
+                // ==========================================
+                // DISPLAY ATTENDANCE PERCENTAGE
+                // ==========================================
+
+                document.getElementById(
+                    "attendancePercentage"
+                ).textContent =
+                    `${attendancePercentage.toFixed(2)}%`;
+
+
+                // ==========================================
+                // PROGRESS BAR
+                // ==========================================
+
+                const progressBar =
+                    document.getElementById(
+                        "progressBar"
+                    );
+
+
+                progressBar.style.width =
+                    `${Math.min(
+                        attendancePercentage,
+                        100
+                    )}%`;
+
+
+                // ==========================================
+                // PERCENTAGE TEXT
+                // ==========================================
+
+                document.getElementById(
+                    "percentageText"
+                ).textContent =
+                    `Attendance: ${attendancePercentage.toFixed(2)}%`;
+
+
+                // ==========================================
+                // ATTENDANCE MESSAGE
+                // ==========================================
+
+                const message =
+                    document.getElementById(
+                        "attendanceMessage"
+                    );
+
+
+                if (
+                    totalWorkingDays === 0
+                ) {
+
+                    message.textContent =
+                        "No attendance records are available yet.";
+
+                }
+
+
+                else if (
+                    attendancePercentage >= 75
+                ) {
+
+                    message.textContent =
+                        "Your attendance is above the required 75%.";
+
+                }
+
+
+                else {
+
+                    message.textContent =
+                        "Your attendance is below 75%. Please attend classes regularly.";
+
+                }
+
+            }
+
+
+            catch (error) {
+
+                console.error(
+                    "Attendance Error:",
+                    error
+                );
+
+
+                document.getElementById(
+                    "pageMessage"
+                ).innerHTML = `
+
+                    <div class="error">
+
+                        Unable to load attendance data.
+
+                        <br>
+
+                        Please check the backend server.
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+        // ==========================================
+        // LOGOUT
+        // ==========================================
+
+        function logout() {
+
+            localStorage.removeItem(
+                "studentId"
+            );
+
+            localStorage.removeItem(
+                "userRole"
+            );
+
+
+            window.location.href =
+                "login.html";
+
+        }
+
+
+        // ==========================================
+        // LOAD PAGE
+        // ==========================================
+
+        loadStudentInfo();
+
+        loadAttendance();
+
+
+    </script>
+
+
+</body>
+
+</html>
