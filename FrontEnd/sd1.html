@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+        }
+
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h2 {
+            font-size: 24px;
+        }
+
+        .logout-btn {
+            background: red;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        .welcome {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            margin-top: 10px;
+        }
+
+        .icon {
+            font-size: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h2>🎓 Student Dashboard</h2>
+
+        <button class="logout-btn" onclick="logout()">
+            Logout
+        </button>
+    </div>
+
+    <div class="container">
+
+        <div class="welcome">
+            <h2 id="studentName">
+                Welcome Student
+            </h2>
+
+            <p>
+                View your attendance, marks and fee details.
+            </p>
+        </div>
+
+        <div class="cards">
+
+            <div class="card" onclick="openProfile()">
+                <div class="icon">👤</div>
+                <h3>My Profile</h3>
+            </div>
+
+            <div class="card" onclick="openAttendance()">
+                <div class="icon">📅</div>
+                <h3>My Attendance</h3>
+            </div>
+
+            <div class="card" onclick="openMarks()">
+                <div class="icon">📝</div>
+                <h3>My Marks</h3>
+            </div>
+
+            <div class="card" onclick="openFees()">
+                <div class="icon">💰</div>
+                <h3>My Fees</h3>
+            </div>
+
+            <div class="card" onclick="changePassword()">
+                <div class="icon">🔒</div>
+                <h3>Change Password</h3>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        const user =
+            JSON.parse(localStorage.getItem("user"));
+
+        if (user) {
+
+            document.getElementById("studentName")
+                .innerText =
+                `Welcome ${user.First_Name || "Student"}`;
+        }
+
+        function openProfile() {
+            window.location.href = "student-profile.html";
+        }
+
+        function openAttendance() {
+            window.location.href = "student-attendance.html";
+        }
+
+        function openMarks() {
+            window.location.href = "student-marks.html";
+        }
+
+        function openFees() {
+            window.location.href = "student-fees.html";
+        }
+
+        function changePassword() {
+            alert("Change Password page coming soon");
+        }
+
+        function logout() {
+
+            localStorage.clear();
+
+            window.location.href = "index.html";
+        }
+
+    </script>
+
+</body>
+
+</html>

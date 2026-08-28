@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+        }
+
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h2 {
+            font-size: 24px;
+        }
+
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        .welcome {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            margin-top: 10px;
+        }
+
+        .icon {
+            font-size: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h2>🎓 Student Dashboard</h2>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="container">
+
+        <div class="welcome">
+            <h2 id="studentName">Welcome, Student</h2>
+            <br>
+            <p>View your Profile </p>
+            <br>
+            <div class="cards">
+                <div class="card" onclick="openProfile()">
+                    <div class="icon">👤</div>
+                    <h3>My Profile</h3>
+                </div>
+            </div>
+            <br>
+            <br>
+            <p>View your Attendance </p>
+            <br>
+            <div class="cards">
+                <div class="card" onclick="openAttendance()">
+                    <div class="icon">📅</div>
+                    <h3>My Attendance</h3>
+                </div>
+            </div>
+            <br>
+            <br>
+            <p>View your Marks </p>
+            <br>
+            <div class="cards">
+                <div class="card" onclick="openMarks()">
+                    <div class="icon">📝</div>
+                    <h3>My Marks</h3>
+                </div>
+            </div>
+            <br>
+            <br>
+            <p>View your Fees status </p>
+            <br>
+            <div class="cards">
+                <div class="card" onclick="openFees()">
+                    <div class="icon">💰</div>
+                    <h3>My Fees</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards">
+
+            <!-- <div class="card" onclick="openProfile()">
+                <div class="icon">👤</div>
+                <h3>My Profile</h3>
+            </div> -->
+
+            <!-- <div class="card" onclick="openAttendance()">
+                <div class="icon">📅</div>
+                <h3>My Attendance</h3>
+            </div> -->
+
+            <!-- <div class="card" onclick="openMarks()">
+                <div class="icon">📝</div>
+                <h3>My Marks</h3>
+            </div> -->
+
+            <!-- <div class="card" onclick="openFees()">
+                <div class="icon">💰</div>
+                <h3>My Fees</h3>
+            </div> -->
+
+            <!-- <div class="card" onclick="changePassword()">
+                <div class="icon">🔒</div>
+                <h3>Change Password</h3>
+            </div> -->
+
+        </div>
+
+    </div>
+
+    <script>
+        // Retrieve Session Data from LocalStorage
+        const studentId = localStorage.getItem("studentId");
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const role = localStorage.getItem("role");
+
+        // Guard Route: Verify active Student session
+        if (!studentId || role !== "student") {
+            alert("No active student session found. Redirecting to login page...");
+            localStorage.clear();
+            window.location.href = "index.html";
+        } else {
+            // Priority ordering for name property variations returned from backend SQL
+            const name = user.Name || user.First_Name || user.first_name || user.username || "Student";
+            document.getElementById("studentName").innerText = `Welcome, ${name}!`;
+
+            // Optional: Fetch updated details directly using the studentId
+            fetchStudentDetails(studentId);
+        }
+
+        // Fetch optional updated details from Backend
+        // Fetch optional updated details from Backend
+        async function fetchStudentDetails(id) {
+            try {
+                const response = await fetch(`http://localhost:5000/students/${id}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.Name) {
+                        document.getElementById("studentName").innerText = `Welcome, ${data.Name}!`;
+                    }
+                }
+            } catch (err) {
+                console.log("Note: Could not fetch secondary profile updates from API:", err);
+            }
+        }
+
+        // Navigation Functions
+        function openProfile() {
+            window.location.href = "student-profile.html";
+        }
+
+        function openAttendance() {
+            window.location.href = "student-attendance.html";
+        }
+
+        function openMarks() {
+            window.location.href = "student-marks.html";
+        }
+
+        function openFees() {
+            window.location.href = "student-fees.html";
+        }
+
+        function changePassword() {
+            alert("Change Password feature coming soon!");
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
+    </script>
+
+</body>
+
+</html>

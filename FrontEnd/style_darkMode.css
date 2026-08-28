@@ -1,0 +1,39 @@
+/* Core Dark Mode Overrides */
+body.dark-mode, 
+html.dark-mode {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+}
+
+/* Update cards, panels, and sidebars in dark mode */
+.dark-mode .card,
+.dark-mode .sidebar,
+.dark-mode .navbar,
+.dark-mode .settings-section,
+.dark-mode table,
+.dark-mode input,
+.dark-mode select {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+    border-color: #333333 !important;
+}
+
+/* Update text colors inside dark mode elements */
+.dark-mode h1, 
+.dark-mode h2, 
+.dark-mode h3, 
+.dark-mode p, 
+.dark-mode label, 
+.dark-mode td, 
+.dark-mode th {
+    color: #f0f0f0 !important;
+}
+
+/* Update inputs and text fields */
+.dark-mode input, 
+.dark-mode select, 
+.dark-mode textarea {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+    border: 1px solid #444444 !important;
+}
