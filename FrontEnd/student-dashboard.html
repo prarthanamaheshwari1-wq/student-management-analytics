@@ -196,7 +196,7 @@
         // Fetch optional updated details from Backend
         async function fetchStudentDetails(id) {
             try {
-                const response = await fetch(`http://localhost:5000/students/${id}`);
+                const response = await fetch(`https://student-management-analytics.onrender.com/students/${id}`);
                 if (response.ok) {
                     const data = await response.json();
                     if (data && data.Name) {
