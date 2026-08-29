@@ -20,5 +20,13 @@
   "bugs": {
     "url": "https://github.com/prarthanamaheshwari1-wq/student-management-analytics/issues"
   },
-  "homepage": "https://github.com/prarthanamaheshwari1-wq/student-management-analytics#readme"
+  "homepage": "https://github.com/prarthanamaheshwari1-wq/student-management-analytics#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mssql": "^12.7.0"
+  }
 }
