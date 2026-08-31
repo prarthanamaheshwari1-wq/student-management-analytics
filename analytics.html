@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Analytics - Student Management System</title>
+
+    <!-- Existing Dark Mode CSS -->
+    <link rel="stylesheet" href="style_darkMode.css">
+
+    <script>
+        // Prevent light-mode flash
+        (function () {
+            if (localStorage.getItem("darkMode") === "enabled") {
+                document.documentElement.classList.add("dark-mode");
+
+                document.addEventListener("DOMContentLoaded", function () {
+                    document.body.classList.add("dark-mode");
+                });
+            }
+        })();
+    </script>
+
+
+    <style>
+
+        /* ================= GENERAL ================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            color: #333;
+        }
+
+
+        /* ================= SIDEBAR ================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #1e293b;
+            color: white;
+            padding: 25px 15px;
+            overflow-y: auto;
+        }
+
+
+        .logo {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+
+        .logo h2 {
+            font-size: 20px;
+        }
+
+
+        .logo p {
+            color: #cbd5e1;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+
+        .menu {
+            list-style: none;
+        }
+
+
+        .menu li {
+            margin-bottom: 10px;
+        }
+
+
+        .menu a {
+            display: block;
+            padding: 13px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+
+        .menu a:hover,
+        .menu a.active {
+            background: #334155;
+            color: white;
+        }
+
+
+        .logout {
+            position: absolute;
+            bottom: 25px;
+            left: 15px;
+            right: 15px;
+        }
+
+
+        .logout a {
+            color: #fecaca;
+        }
+
+
+        /* ================= MAIN ================= */
+
+        .main {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+
+
+        /* ================= TOPBAR ================= */
+
+        .topbar {
+            height: 70px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 1px solid #ddd;
+        }
+
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+
+        .admin-icon {
+            width: 40px;
+            height: 40px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        /* ================= CONTENT ================= */
+
+        .content {
+            padding: 30px;
+        }
+
+
+        /* ================= PAGE HEADING ================= */
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+
+        .page-heading h1 {
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+
+        .page-heading p {
+            color: #64748b;
+        }
+
+
+        /* ================= DASHBOARD GRID ================= */
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+
+        /* ================= ANALYTICS CARD ================= */
+
+        .analytics-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+
+            box-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.08);
+
+            transition: 0.25s;
+        }
+
+
+        .analytics-card:hover {
+            transform: translateY(-4px);
+
+            box-shadow:
+                0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+
+        .analytics-card h2 {
+            font-size: 20px;
+            margin-bottom: 7px;
+            color: #1e293b;
+        }
+
+
+        .analytics-card p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+
+        /* ================= DASHBOARD IMAGE ================= */
+
+        .dashboard-image {
+            width: 100%;
+            height: auto;
+            display: block;
+
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+
+            cursor: pointer;
+
+            transition: 0.25s;
+        }
+
+
+        .dashboard-image:hover {
+            transform: scale(1.015);
+            opacity: 0.92;
+        }
+
+
+        .view-text {
+            text-align: center;
+            margin-top: 10px;
+
+            color: #2563eb;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+
+        /* ================= FULL SCREEN MODAL ================= */
+
+        .image-modal {
+            display: none;
+
+            position: fixed;
+
+            left: 0;
+            top: 0;
+
+            width: 100%;
+            height: 100%;
+
+            background: rgba(0, 0, 0, 0.94);
+
+            z-index: 5000;
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 25px;
+        }
+
+
+        .modal-image {
+            max-width: 96%;
+            max-height: 94vh;
+
+            object-fit: contain;
+
+            border-radius: 8px;
+
+            box-shadow:
+                0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+
+        /* ================= CLOSE BUTTON ================= */
+
+        .close-button {
+            position: absolute;
+
+            top: 15px;
+            right: 25px;
+
+            color: white;
+
+            font-size: 42px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            line-height: 1;
+        }
+
+
+        .close-button:hover {
+            color: #cbd5e1;
+        }
+
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width: 900px) {
+
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                position: relative;
+
+                width: 100%;
+                height: auto;
+
+                padding-bottom: 20px;
+            }
+
+
+            .main {
+                margin-left: 0;
+            }
+
+
+            .logout {
+                position: static;
+
+                margin-top: 20px;
+            }
+
+
+            .topbar {
+                padding: 0 20px;
+            }
+
+
+            .content {
+                padding: 20px;
+            }
+
+
+            .page-heading h1 {
+                font-size: 24px;
+            }
+
+
+            .image-modal {
+                padding: 10px;
+            }
+
+
+            .modal-image {
+                max-width: 100%;
+                max-height: 90vh;
+            }
+
+
+            .close-button {
+                top: 10px;
+                right: 15px;
+
+                font-size: 36px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <h2>Student Management</h2>
+
+            <p>System</p>
+
+        </div>
+
+
+        <ul class="menu">
+
+
+            <li>
+
+                <a href="dashboard.html">
+
+                    🏠 Dashboard
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="students.html">
+
+                    👨‍🎓 Students
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="teachers.html">
+
+                    👨‍🏫 Teachers
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="attendence.html">
+
+                    📅 Attendence
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="marks.html">
+
+                    📝 Marks
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="fees.html">
+
+                    💰 Fees
+
+                </a>
+
+            </li>
+
+
+            <!-- NEW ANALYTICS LINK -->
+
+            <li>
+
+                <a href="analytics.html" class="active">
+
+                    📊 Analytics
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="reports.html">
+
+                    📊 Reports
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="settings.html">
+
+                    ⚙ Settings
+
+                </a>
+
+            </li>
+
+
+        </ul>
+
+
+        <div class="logout">
+
+            <a href="index.html" onclick="logout()">
+                🚪 Logout
+            </a>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="main">
+
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <h3>Analytics</h3>
+
+
+            <div class="admin-profile">
+
+                <span>Admin</span>
+
+
+                <div class="admin-icon">
+
+                    👤
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- ================= CONTENT ================= -->
+
+        <section class="content">
+
+
+            <!-- PAGE HEADER -->
+
+            <div class="page-heading">
+
+                <h1>
+                    Power BI Analytics
+                </h1>
+
+
+                <p>
+                    Analyze institution performance, attendance, fees and student marks.
+                </p>
+
+            </div>
+
+
+
+            <!-- ================= DASHBOARDS ================= -->
+
+            <div class="analytics-grid">
+
+
+                <!-- INSTITUTION OVERVIEW -->
+
+                <div class="analytics-card">
+
+                    <h2>
+                        Institution Overview
+                    </h2>
+
+
+                    <p>
+                        Overall institution statistics and key performance indicators.
+                    </p>
+
+
+                    <img
+                        src="images/institution-overview.png"
+                        alt="Institution Overview"
+                        class="dashboard-image"
+                        onclick="openDashboard(this.src)"
+                    >
+
+
+                    <div class="view-text">
+
+                        🔍 Click to view full screen
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ATTENDANCE ANALYTICS -->
+
+                <div class="analytics-card">
+
+                    <h2>
+                        Attendance Analytics
+                    </h2>
+
+
+                    <p>
+                        Analyze attendance trends and student attendance performance.
+                    </p>
+
+
+                    <img
+                        src="images/attendance-analytics.png"
+                        alt="Attendance Analytics"
+                        class="dashboard-image"
+                        onclick="openDashboard(this.src)"
+                    >
+
+
+                    <div class="view-text">
+
+                        🔍 Click to view full screen
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- FEES ANALYTICS -->
+
+                <div class="analytics-card">
+
+                    <h2>
+                        Fees Analytics
+                    </h2>
+
+
+                    <p>
+                        Monitor paid fees, pending fees and overall fee collection.
+                    </p>
+
+
+                    <img
+                        src="images/fees-analytics.png"
+                        alt="Fees Analytics"
+                        class="dashboard-image"
+                        onclick="openDashboard(this.src)"
+                    >
+
+
+                    <div class="view-text">
+
+                        🔍 Click to view full screen
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- MARKS ANALYTICS -->
+
+                <div class="analytics-card">
+
+                    <h2>
+                        Marks Analytics
+                    </h2>
+
+
+                    <p>
+                        Analyze examination marks, subjects and student performance.
+                    </p>
+
+
+                    <img
+                        src="images/marks-analytics.png"
+                        alt="Marks Analytics"
+                        class="dashboard-image"
+                        onclick="openDashboard(this.src)"
+                    >
+
+
+                    <div class="view-text">
+
+                        🔍 Click to view full screen
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- ================= FULL SCREEN IMAGE MODAL ================= -->
+
+    <div
+        id="dashboardModal"
+        class="image-modal"
+        onclick="closeDashboard(event)"
+    >
+
+
+        <span
+            class="close-button"
+            onclick="closeModal()"
+        >
+
+            &times;
+
+        </span>
+
+
+        <img
+            id="fullDashboardImage"
+            class="modal-image"
+            src=""
+            alt="Power BI Dashboard"
+        >
+
+
+    </div>
+
+
+
+    <!-- ================= JAVASCRIPT ================= -->
+
+    <script>
+
+
+        /* ================================================
+           OPEN DASHBOARD FULL SCREEN
+        ================================================= */
+
+        function openDashboard(imageSource) {
+
+            const modal =
+                document.getElementById(
+                    "dashboardModal"
+                );
+
+
+            const image =
+                document.getElementById(
+                    "fullDashboardImage"
+                );
+
+
+            image.src = imageSource;
+
+
+            modal.style.display = "flex";
+
+
+            // Prevent background scrolling
+
+            document.body.style.overflow = "hidden";
+
+        }
+
+
+
+        /* ================================================
+           CLOSE DASHBOARD
+        ================================================= */
+
+        function closeModal() {
+
+            const modal =
+                document.getElementById(
+                    "dashboardModal"
+                );
+
+
+            modal.style.display = "none";
+
+
+            document.body.style.overflow = "auto";
+
+        }
+
+
+
+        /* ================================================
+           CLOSE WHEN CLICKING OUTSIDE IMAGE
+        ================================================= */
+
+        function closeDashboard(event) {
+
+            if (
+                event.target.id ===
+                "dashboardModal"
+            ) {
+
+                closeModal();
+
+            }
+
+        }
+
+
+
+        /* ================================================
+           ESCAPE KEY
+        ================================================= */
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape"
+                ) {
+
+                    closeModal();
+
+                }
+
+            }
+        );
+
+
+    </script>
+
+
+</body>
+
+</html>
