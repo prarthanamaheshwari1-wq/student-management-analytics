@@ -17,56 +17,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-// --- ADD NEW TEACHER ROUTE ---
-app.post("/teachers", async (req, res) => {
-    try {
-        const { First_Name, Last_Name, Subject, Phone_No, Email, Qualification, Joining_Date } = req.body;
-
-        if (!First_Name || !Last_Name || !Email) {
-            return res.status(400).json({ error: "First Name, Last Name, and Email are required." });
-        }
-
-        const pool = await poolPromise;
-
-        // 1. Get the max existing Teacher_id to determine the next username number
-        const countResult = await pool.request().query("SELECT MAX(Teacher_id) AS MaxId FROM Teacher");
-        const nextId = (countResult.recordset[0].MaxId || 0) + 1;
-        
-        // 2. Set username and default password dynamically
-        const generatedUsername = `teacher${nextId}`;
-        const defaultPassword = "teacher123"; 
-
-        // 3. Insert new teacher with auto-generated credentials
-        const insertResult = await pool.request()
-            .input("First_Name", sql.VarChar(50), First_Name)
-            .input("Last_Name", sql.VarChar(50), Last_Name)
-            .input("Subject", sql.VarChar(50), Subject || null)
-            .input("Phone_No", sql.VarChar(15), Phone_No || null)
-            .input("Email", sql.VarChar(100), Email)
-            .input("Qualification", sql.VarChar(50), Qualification || null)
-            .input("Joining_Date", sql.Date, Joining_Date || new Date())
-            .input("Username", sql.VarChar(50), generatedUsername)
-            .input("Password", sql.VarChar(255), defaultPassword)
-            .query(`
-                INSERT INTO Teacher (First_Name, Last_Name, Subject, Phone_No, Email, Qualification, Joining_Date, Username, Password)
-                OUTPUT INSERTED.*
-                VALUES (@First_Name, @Last_Name, @Subject, @Phone_No, @Email, @Qualification, @Joining_Date, @Username, @Password)
-            `);
-
-        res.status(201).json({
-            message: "Teacher added successfully",
-            teacher: insertResult.recordset[0],
-            assignedCredentials: {
-                username: generatedUsername,
-                password: defaultPassword
-            }
-        });
-
-    } catch (error) {
-        console.error("Add Teacher Error:", error);
-        res.status(500).json({ error: "Failed to add teacher", details: error.message });
-    }
-});
 function auth(roles = []) {
   return (req, res, next) => {
     const header = req.headers["authorization"] || "";
@@ -136,108 +86,6 @@ const ROLE_CONFIG = {
   teacher: { table: "Teacher", idField: "Teacher_id" },
   student: { table: "Student", idField: "Student_id" },
 };
-// // ==========================================
-// // UNIFIED LOGIN ROUTE (Admin, Teacher, Student)
-// // ==========================================
-// app.post("/login", async (req, res) => {
-//     try {
-//         const { username, password } = req.body;
-
-//         if (!username || !password) {
-//             return res.status(400).json({ error: "Username and password are required." });
-//         }
-
-//         const pool = await poolPromise;
-
-//         // ------------------------------------------
-//         // 1. CHECK ADMIN TABLE FIRST
-//         // ------------------------------------------
-//         const adminResult = await pool
-//             .request()
-//             .input("username", sql.VarChar, username)
-//             .input("password", sql.VarChar, password)
-//             .query(`
-//                 SELECT * FROM Admin 
-//                 WHERE Username = @username AND Password = @password
-//             `);
-
-//         if (adminResult.recordset.length > 0) {
-//             const admin = adminResult.recordset[0];
-//             return res.json({
-//                 message: "Admin login successful",
-//                 role: "admin",
-//                 user: admin
-//             });
-//         }
-
-//         // ------------------------------------------
-//         // 2. CHECK TEACHER TABLE SECOND
-//         // ------------------------------------------
-//         const teacherResult = await pool
-//             .request()
-//             .input("username", sql.VarChar, username)
-//             .input("password", sql.VarChar, password)
-//             .query(`
-//                 SELECT * FROM Teacher 
-//                 WHERE (Email = @username OR Username = @username) 
-//                   AND Password = @password
-//             `);
-
-//         if (teacherResult.recordset.length > 0) {
-//             const teacher = teacherResult.recordset[0];
-//             return res.json({
-//                 message: "Teacher login successful",
-//                 role: "teacher",
-//                 teacherId: teacher.Teacher_id || teacher.id,
-//                 user: teacher
-//             });
-//         }
-
-//         // ------------------------------------------
-//         // 3. CHECK STUDENT TABLE THIRD
-//         // ------------------------------------------
-//         const studentResult = await pool
-//             .request()
-//             .input("username", sql.VarChar, username)
-//             .input("password", sql.VarChar, password)
-//             .query(`
-//                 SELECT 
-//                     Student_id,
-//                     Roll_No,
-//                     First_Name,
-//                     Last_Name,
-//                     (First_Name + ' ' + Last_Name) AS Name,
-//                     Email,
-//                     Class,
-//                     Section
-//                 FROM Student
-//                 WHERE (Roll_No = @username OR Email = @username) 
-//                   AND Password = @password
-//             `);
-
-//         if (studentResult.recordset.length > 0) {
-//             const student = studentResult.recordset[0];
-//             return res.json({
-//                 message: "Student login successful",
-//                 role: "student",
-//                 studentId: student.Student_id,
-//                 user: student
-//             });
-//         }
-
-//         // ------------------------------------------
-//         // IF NO MATCH IN ANY TABLE
-//         // ------------------------------------------
-//         return res.status(401).json({ error: "Invalid username/Roll No or password." });
-
-//     } catch (error) {
-//         console.error("LOGIN ERROR DETAILS:", error);
-//         res.status(500).json({ 
-//             error: "Server error during login", 
-//             details: error.message 
-//         });
-//     }
-// });
 app.post("/login", async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -366,6 +214,82 @@ app.get("/students", async (req, res) => {
     }
 
 });
+app.post("/ai-assistant", async (req, res) => {
+    try {
+        const { question } = req.body;
+
+        if (!question || !question.trim()) {
+            return res.status(400).json({
+                error: "Question is required"
+            });
+        }
+
+        const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+        if (!GEMINI_API_KEY) {
+            return res.status(500).json({
+                error: "Gemini API key is not configured on the server"
+            });
+        }
+
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    contents: [
+                        {
+                            parts: [
+                                {
+                                    text: `You are an AI Academic Assistant for a Student Management System built under UN SDG 4 (Quality Education).
+
+Your role:
+- Help students with study plans.
+- Help improve attendance.
+- Give exam preparation tips.
+- Explain academic concepts.
+- Provide career guidance.
+- Answer in a clear and student-friendly way.
+
+Question: ${question}`
+                                }
+                            ]
+                        }
+                    ]
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error("Gemini API Error:", data);
+
+            return res.status(response.status).json({
+                error: data.error?.message || "Gemini API request failed"
+            });
+        }
+
+        const aiReply =
+            data.candidates?.[0]?.content?.parts?.[0]?.text ||
+            "Sorry, I couldn't generate a response.";
+
+        res.json({
+            reply: aiReply
+        });
+
+    } catch (error) {
+        console.error("AI Assistant Error:", error);
+
+        res.status(500).json({
+            error: "Unable to connect to AI Assistant",
+            details: error.message
+        });
+    }
+});
 
 // ======================================================
 // GET ONE STUDENT
@@ -459,15 +383,89 @@ app.get("/students/:id", async (req, res) => {
     }
 
 });
+// ==========================================
+// GET SINGLE STUDENT PROFILE BY ID
+// ==========================================
+// ==========================================
+// UPDATE STUDENT RECORD BY ID
+// ==========================================
+app.put("/students/:id", async (req, res) => {
+    try {
+        const studentId = parseInt(req.params.id, 10);
+        if (isNaN(studentId)) {
+            return res.status(400).json({ error: "Invalid Student ID format." });
+        }
+
+        const {
+            Roll_No,
+            First_Name,
+            Last_Name,
+            Class,
+            Section,
+            Gender,
+            Email,
+            Phone_No,
+            DOB,
+            Admission_Date,
+            Username
+        } = req.body;
+
+        const pool = await poolPromise;
+
+        // Agar Username nahi bheja ya NULL hai, toh Roll_No ko hi Username bana do
+        const finalUsername = (Username && Username.trim() !== "") ? Username : Roll_No;
+
+        const result = await pool
+            .request()
+            .input("Student_id", sql.Int, studentId)
+            .input("Roll_No", sql.VarChar(20), Roll_No)
+            .input("First_Name", sql.VarChar(50), First_Name)
+            .input("Last_Name", sql.VarChar(50), Last_Name)
+            .input("Class", sql.VarChar(20), Class)
+            .input("Section", sql.VarChar(10), Section)
+            .input("Gender", sql.VarChar(10), Gender)
+            .input("Email", sql.VarChar(100), Email)
+            .input("Phone_No", sql.VarChar(20), Phone_No)
+            .input("DOB", sql.Date, DOB ? DOB : null)
+            .input("Admission_Date", sql.Date, Admission_Date ? Admission_Date : null)
+            .input("Username", sql.VarChar(50), finalUsername)
+            .query(`
+                UPDATE Student
+                SET
+                    Roll_No = @Roll_No,
+                    First_Name = @First_Name,
+                    Last_Name = @Last_Name,
+                    Class = @Class,
+                    Section = @Section,
+                    Gender = @Gender,
+                    Email = @Email,
+                    Phone_No = @Phone_No,
+                    DOB = @DOB,
+                    Admission_Date = @Admission_Date,
+                    Username = @Username
+                WHERE Student_id = @Student_id
+            `);
+
+        if (result.rowsAffected[0] === 0) {
+            return res.status(404).json({ error: "Student not found." });
+        }
+
+        res.json({ message: "Student record updated successfully!" });
+    } catch (error) {
+        console.error("Update Student Error:", error);
+        res.status(500).json({
+            error: "Failed to update student details.",
+            details: error.message
+        });
+    }
+});
 
 // ======================================================
 // ADD STUDENT
 // ======================================================
 
 app.post("/students", async (req, res) => {
-
     try {
-
         const {
             Roll_No,
             First_Name,
@@ -482,94 +480,45 @@ app.post("/students", async (req, res) => {
             Admission_Date
         } = req.body;
 
+        // Validation check (Removed strict First_Name requirement if your form only has Last Name)
         if (
-            Roll_No === undefined ||
-            First_Name === undefined ||
-            Last_Name === undefined ||
-            Class === undefined ||
-            Section === undefined ||
-            Gender === undefined ||
-            Phone_No === undefined ||
-            Email === undefined
+            !Roll_No ||
+            !Last_Name ||
+            !Class ||
+            !Section ||
+            !Gender ||
+            !Phone_No ||
+            !Email
         ) {
-
             return res.status(400).json({
                 error: "Please provide all required student fields"
             });
-
         }
+
+        // Ensure First_Name is string or empty string if missing from form
+        const safeFirstName = First_Name || "";
+
+        // Ensure Username is a valid string derived from Roll_No
+        const Username = String(Roll_No).trim();
+        const Password = "student123";
 
         const pool = await poolPromise;
 
         const result = await pool
             .request()
-
-            .input(
-                "Roll_No",
-                sql.VarChar,
-                Roll_No
-            )
-
-            .input(
-                "First_Name",
-                sql.VarChar,
-                First_Name
-            )
-
-            .input(
-                "Last_Name",
-                sql.VarChar,
-                Last_Name
-            )
-
-            .input(
-                "Class",
-                sql.VarChar,
-                Class
-            )
-
-            .input(
-                "Section",
-                sql.VarChar,
-                Section
-            )
-
-            .input(
-                "Gender",
-                sql.VarChar,
-                Gender
-            )
-
-            .input(
-                "DOB",
-                sql.Date,
-                DOB || null
-            )
-
-            .input(
-                "Phone_No",
-                sql.VarChar,
-                Phone_No
-            )
-
-            .input(
-                "Email",
-                sql.VarChar,
-                Email
-            )
-
-            .input(
-                "Address",
-                sql.VarChar,
-                Address || null
-            )
-
-            .input(
-                "Admission_Date",
-                sql.Date,
-                Admission_Date || null
-            )
-
+            .input("Roll_No", sql.VarChar(20), String(Roll_No))
+            .input("First_Name", sql.VarChar(50), safeFirstName)
+            .input("Last_Name", sql.VarChar(50), Last_Name)
+            .input("Class", sql.VarChar(20), Class)
+            .input("Section", sql.VarChar(10), Section)
+            .input("Gender", sql.VarChar(10), Gender)
+            .input("DOB", sql.Date, DOB || null)
+            .input("Phone_No", sql.VarChar(15), Phone_No)
+            .input("Email", sql.VarChar(100), Email)
+            .input("Address", sql.VarChar(255), Address || null)
+            .input("Admission_Date", sql.Date, Admission_Date || null)
+            .input("Username", sql.VarChar(50), Username)
+            .input("Password", sql.VarChar(255), Password)
             .query(`
                 INSERT INTO Student
                 (
@@ -583,11 +532,11 @@ app.post("/students", async (req, res) => {
                     Phone_No,
                     Email,
                     Address,
-                    Admission_Date
+                    Admission_Date,
+                    Username,
+                    Password
                 )
-
                 OUTPUT INSERTED.*
-
                 VALUES
                 (
                     @Roll_No,
@@ -600,51 +549,41 @@ app.post("/students", async (req, res) => {
                     @Phone_No,
                     @Email,
                     @Address,
-                    @Admission_Date
+                    @Admission_Date,
+                    @Username,
+                    @Password
                 )
             `);
 
         res.status(201).json({
-
             message: "Student added successfully",
-
             student: result.recordset[0]
-
         });
 
     } catch (error) {
-
         console.error("Add Student Error:", error);
 
         res.status(500).json({
-
             error: "Unable to add student",
-
             details: error.message
-
         });
-
     }
-
 });
 
 // ======================================================
 // UPDATE STUDENT
 // ======================================================
-
+// ==========================================
+// UPDATE STUDENT RECORD BY ID
+// ==========================================
+// ==========================================
+// UPDATE STUDENT RECORD BY ID
+// ==========================================
 app.put("/students/:id", async (req, res) => {
-
     try {
-
-        const studentId =
-            parseInt(req.params.id, 10);
-
+        const studentId = parseInt(req.params.id, 10);
         if (isNaN(studentId)) {
-
-            return res.status(400).json({
-                error: "Invalid Student ID"
-            });
-
+            return res.status(400).json({ error: "Invalid Student ID format." });
         }
 
         const {
@@ -654,10 +593,9 @@ app.put("/students/:id", async (req, res) => {
             Class,
             Section,
             Gender,
-            DOB,
-            Phone_No,
             Email,
-            Address,
+            Phone_No,
+            DOB,
             Admission_Date
         } = req.body;
 
@@ -665,82 +603,19 @@ app.put("/students/:id", async (req, res) => {
 
         const result = await pool
             .request()
-
-            .input(
-                "Student_id",
-                sql.Int,
-                studentId
-            )
-
-            .input(
-                "Roll_No",
-                sql.VarChar,
-                Roll_No
-            )
-
-            .input(
-                "First_Name",
-                sql.VarChar,
-                First_Name
-            )
-
-            .input(
-                "Last_Name",
-                sql.VarChar,
-                Last_Name
-            )
-
-            .input(
-                "Class",
-                sql.VarChar,
-                Class
-            )
-
-            .input(
-                "Section",
-                sql.VarChar,
-                Section
-            )
-
-            .input(
-                "Gender",
-                sql.VarChar,
-                Gender
-            )
-
-            .input(
-                "DOB",
-                sql.Date,
-                DOB || null
-            )
-
-            .input(
-                "Phone_No",
-                sql.VarChar,
-                Phone_No
-            )
-
-            .input(
-                "Email",
-                sql.VarChar,
-                Email
-            )
-
-            .input(
-                "Address",
-                sql.VarChar,
-                Address || null
-            )
-
-            .input(
-                "Admission_Date",
-                sql.Date,
-                Admission_Date || null
-            )
-
+            .input("Student_id", sql.Int, studentId)
+            .input("Roll_No", sql.VarChar(20), Roll_No)
+            .input("First_Name", sql.VarChar(50), First_Name)
+            .input("Last_Name", sql.VarChar(50), Last_Name)
+            .input("Class", sql.VarChar(20), Class)
+            .input("Section", sql.VarChar(10), Section)
+            .input("Gender", sql.VarChar(10), Gender)
+            .input("Email", sql.VarChar(100), Email)
+            .input("Phone_No", sql.VarChar(20), Phone_No)
+            .input("DOB", sql.Date, DOB ? DOB : null)
+            .input("Admission_Date", sql.Date, Admission_Date ? Admission_Date : null)
             .query(`
                 UPDATE Student
-
                 SET
                     Roll_No = @Roll_No,
                     First_Name = @First_Name,
@@ -748,38 +623,25 @@ app.put("/students/:id", async (req, res) => {
                     Class = @Class,
                     Section = @Section,
                     Gender = @Gender,
-                    DOB = @DOB,
-                    Phone_No = @Phone_No,
                     Email = @Email,
-                    Address = @Address,
+                    Phone_No = @Phone_No,
+                    DOB = @DOB,
                     Admission_Date = @Admission_Date
-
                 WHERE Student_id = @Student_id
             `);
 
         if (result.rowsAffected[0] === 0) {
-
-            return res.status(404).json({
-                error: "Student not found"
-            });
-
+            return res.status(404).json({ error: "Student not found." });
         }
 
-        res.json({
-            message: "Student updated successfully"
-        });
-
+        res.json({ message: "Student record updated successfully!" });
     } catch (error) {
-
         console.error("Update Student Error:", error);
-
         res.status(500).json({
-            error: "Unable to update student",
+            error: "Failed to update student details.",
             details: error.message
         });
-
     }
-
 });
 
 // ======================================================
@@ -790,37 +652,52 @@ app.delete("/students/:id", async (req, res) => {
 
     try {
 
-        const studentId =
-            parseInt(req.params.id, 10);
+        const studentId = parseInt(req.params.id, 10);
 
         if (isNaN(studentId)) {
-
             return res.status(400).json({
                 error: "Invalid Student ID"
             });
-
         }
 
         const pool = await poolPromise;
 
-        const result = await pool
-            .request()
-            .input(
-                "Student_id",
-                sql.Int,
-                studentId
-            )
+        // Delete child records first
+
+        await pool.request()
+            .input("Student_id", sql.Int, studentId)
+            .query(`
+                DELETE FROM Marks
+                WHERE Student_id = @Student_id
+            `);
+
+        await pool.request()
+            .input("Student_id", sql.Int, studentId)
+            .query(`
+                DELETE FROM Attendence
+                WHERE Student_id = @Student_id
+            `);
+
+        await pool.request()
+            .input("Student_id", sql.Int, studentId)
+            .query(`
+                DELETE FROM Fees
+                WHERE Student_id = @Student_id
+            `);
+
+        // Now delete student
+
+        const result = await pool.request()
+            .input("Student_id", sql.Int, studentId)
             .query(`
                 DELETE FROM Student
                 WHERE Student_id = @Student_id
             `);
 
         if (result.rowsAffected[0] === 0) {
-
             return res.status(404).json({
                 error: "Student not found"
             });
-
         }
 
         res.json({
@@ -952,7 +829,8 @@ app.post("/teachers", async (req, res) => {
             Phone_No,
             Email,
             Qualification,
-            Joining_Date
+            Joining_Date,
+            Address
         } = req.body;
 
         if (!First_Name || !Last_Name) {
@@ -1010,6 +888,12 @@ app.post("/teachers", async (req, res) => {
                 Joining_Date || null
             )
 
+            .input(
+                "Address",
+                sql.VarChar(255),
+                Address || null
+            )
+
             .query(`
                 INSERT INTO Teacher
                 (
@@ -1019,7 +903,8 @@ app.post("/teachers", async (req, res) => {
                     Phone_No,
                     Email,
                     Qualification,
-                    Joining_Date
+                    Joining_Date,
+                    Address
                 )
 
                 OUTPUT INSERTED.*
@@ -1032,7 +917,8 @@ app.post("/teachers", async (req, res) => {
                     @Phone_No,
                     @Email,
                     @Qualification,
-                    @Joining_Date
+                    @Joining_Date,
+                    @Address
                 )
             `);
 
@@ -1086,7 +972,8 @@ app.put("/teachers/:id", async (req, res) => {
             Phone_No,
             Email,
             Qualification,
-            Joining_Date
+            Joining_Date,
+            Address
         } = req.body;
 
         const pool = await poolPromise;
@@ -1142,6 +1029,12 @@ app.put("/teachers/:id", async (req, res) => {
                 Joining_Date || null
             )
 
+            .input(
+                "Address",
+                sql.VarChar(255),
+                Address || null
+            )
+
             .query(`
                 UPDATE Teacher
 
@@ -1152,7 +1045,8 @@ app.put("/teachers/:id", async (req, res) => {
                     Phone_No = @Phone_No,
                     Email = @Email,
                     Qualification = @Qualification,
-                    Joining_Date = @Joining_Date
+                    Joining_Date = @Joining_Date,
+                    Address = @Address
 
                 WHERE Teacher_id = @Teacher_id
             `);
@@ -1181,6 +1075,7 @@ app.put("/teachers/:id", async (req, res) => {
     }
 
 });
+
 
 // ======================================================
 // DELETE TEACHER
@@ -1408,6 +1303,125 @@ app.post("/marks", async (req, res) => {
 
     }
 
+});
+// ======================================================
+// DELETE MARKS
+// ======================================================
+
+app.delete("/marks/:id", async (req, res) => {
+
+    try {
+
+        const marksId = parseInt(req.params.id, 10);
+
+        if (isNaN(marksId)) {
+            return res.status(400).json({
+                error: "Invalid Marks ID"
+            });
+        }
+
+        const pool = await poolPromise;
+
+        const result = await pool
+            .request()
+            .input("Marks_id", sql.Int, marksId)
+            .query(`
+                DELETE FROM Marks
+                WHERE Marks_id = @Marks_id
+            `);
+
+        if (result.rowsAffected[0] === 0) {
+            return res.status(404).json({
+                error: "Marks record not found"
+            });
+        }
+
+        res.json({
+            message: "Marks record deleted successfully"
+        });
+
+    } catch (error) {
+
+        console.error("Delete Marks Error:", error);
+
+        res.status(500).json({
+            error: "Unable to delete marks record",
+            details: error.message
+        });
+
+    }
+
+});
+// UPDATE MARKS
+app.put("/marks/:id", async (req, res) => {
+    try {
+        const marksId = parseInt(req.params.id, 10);
+
+        if (isNaN(marksId)) {
+            return res.status(400).json({
+                error: "Invalid Marks ID"
+            });
+        }
+
+        const {
+            Student_id,
+            Teacher_id,
+            Subject,
+            Marks,
+            Exam_Type
+        } = req.body;
+
+        if (
+            !Student_id ||
+            !Teacher_id ||
+            !Subject ||
+            Marks === undefined ||
+            !Exam_Type
+        ) {
+            return res.status(400).json({
+                error: "All marks fields are required"
+            });
+        }
+
+        const pool = await poolPromise;
+
+        const result = await pool
+            .request()
+            .input("Marks_id", sql.Int, marksId)
+            .input("Student_id", sql.Int, parseInt(Student_id, 10))
+            .input("Teacher_id", sql.Int, parseInt(Teacher_id, 10))
+            .input("Subject", sql.VarChar(50), Subject)
+            .input("Marks", sql.Int, parseInt(Marks, 10))
+            .input("Exam_Type", sql.VarChar(30), Exam_Type)
+            .query(`
+                UPDATE Marks
+                SET
+                    Student_id = @Student_id,
+                    Teacher_id = @Teacher_id,
+                    Subject = @Subject,
+                    Marks = @Marks,
+                    Exam_Type = @Exam_Type
+                WHERE Marks_id = @Marks_id
+            `);
+
+        if (result.rowsAffected[0] === 0) {
+            return res.status(404).json({
+                error: "Marks record not found"
+            });
+        }
+
+        res.json({
+            message: "Marks record updated successfully"
+        });
+
+    } catch (error) {
+        console.error("Update Marks Error:", error);
+
+        res.status(500).json({
+            error: "Unable to update marks record",
+            details: error.message
+        });
+    }
 });
 // ======================================================
 // FEES (SYNCED WITH FRONTEND & DB SCHEMA)
@@ -2430,16 +2444,6 @@ app.get("/test-report", (req, res) => {
 
 });
 
-// 1. POST route to mark/update attendance directly from the website
-// ======================================================
-// ATTENDANCE MANAGEMENT ROUTES (SQL Server)
-// ======================================================
-
-// 1. POST route to mark/update attendance directly from the website
-// ======================================================
-// ATTENDANCE - ADD / UPDATE
-// ======================================================
-
 app.post("/attendence", async (req, res) => {
 
     console.log("======================================");
@@ -2690,24 +2694,6 @@ app.post("/attendence", async (req, res) => {
         });
     }
 });
-
-// 2. GET route to return total working days & present count
-// ======================================================
-// GET PER-STUDENT ATTENDANCE METRICS
-// ======================================================
-
-// ======================================================
-// OVERALL ATTENDANCE METRICS
-// ======================================================
-
-// ======================================================
-// PER-STUDENT ATTENDANCE METRICS
-// ======================================================
-
-// ======================================================
-// PER-STUDENT ATTENDANCE METRICS
-// ======================================================
-
 app.get("/attendance/metrics", async (req, res) => {
 
     try {
@@ -2715,82 +2701,95 @@ app.get("/attendance/metrics", async (req, res) => {
         const studentId = parseInt(req.query.student_id, 10);
 
         if (isNaN(studentId)) {
-
             return res.status(400).json({
                 error: "Valid Student ID is required"
             });
-
         }
 
         const pool = await poolPromise;
 
-        const result = await pool
+        // ---------------------------------------------
+        // 1. GET TOTAL WORKING DAYS
+        // ---------------------------------------------
+
+        const workingDaysResult = await pool
             .request()
-            .input(
-                "Student_id",
-                sql.Int,
-                studentId
-            )
             .query(`
-                SELECT
-
-                    -- Total working days for the whole system
-                    (
-                        SELECT COUNT(DISTINCT Attendence_Date)
-                        FROM Attendence
-                    ) AS TotalWorkingDays,
-
-                    -- Present days for this student
-                    (
-                        SELECT COUNT(*)
-                        FROM Attendence
-                        WHERE Student_id = @Student_id
-                        AND Status = 'Present'
-                    ) AS DaysPresent,
-
-                    -- Absent days for this student
-                    (
-                        SELECT COUNT(*)
-                        FROM Attendence
-                        WHERE Student_id = @Student_id
-                        AND Status = 'Absent'
-                    ) AS DaysAbsent,
-
-                    -- Attendance percentage for this student
-                    (
-                        SELECT
-                            CAST(
-                                SUM(
-                                    CASE
-                                        WHEN Status = 'Present'
-                                        THEN 1
-                                        ELSE 0
-                                    END
-                                ) * 100.0
-                                /
-                                NULLIF(COUNT(*), 0)
-                                AS DECIMAL(5,2)
-                            )
-                        FROM Attendence
-                        WHERE Student_id = @Student_id
-                    ) AS AttendancePercentage
+                SELECT COUNT(DISTINCT Attendence_Date) AS TotalWorkingDays
+                FROM Attendence
             `);
 
-        const metrics = result.recordset[0];
+        const totalWorkingDays =
+            Number(workingDaysResult.recordset[0].TotalWorkingDays) || 0;
+
+
+        // ---------------------------------------------
+        // 2. GET THIS STUDENT'S ATTENDANCE
+        // ---------------------------------------------
+
+        const studentResult = await pool
+            .request()
+            .input("Student_id", sql.Int, studentId)
+            .query(`
+                SELECT
+                    SUM(
+                        CASE
+                            WHEN Status = 'Present'
+                            THEN 1
+                            ELSE 0
+                        END
+                    ) AS DaysPresent,
+
+                    SUM(
+                        CASE
+                            WHEN Status = 'Absent'
+                            THEN 1
+                            ELSE 0
+                        END
+                    ) AS DaysAbsent
+
+                FROM Attendence
+
+                WHERE Student_id = @Student_id
+            `);
+
+        const daysPresent =
+            Number(studentResult.recordset[0].DaysPresent) || 0;
+
+        const daysAbsent =
+            Number(studentResult.recordset[0].DaysAbsent) || 0;
+
+
+        // ---------------------------------------------
+        // 3. CALCULATE ATTENDANCE PERCENTAGE
+        // ---------------------------------------------
+
+        let attendancePercentage = 0;
+
+        if (totalWorkingDays > 0) {
+
+            attendancePercentage =
+                (daysPresent / totalWorkingDays) * 100;
+
+        }
+
+        attendancePercentage =
+            Number(attendancePercentage.toFixed(2));
+
+
+        // ---------------------------------------------
+        // 4. SEND RESPONSE
+        // ---------------------------------------------
 
         res.json({
 
-            totalWorkingDays:
-                metrics.TotalWorkingDays || 0,
+            totalWorkingDays: totalWorkingDays,
 
-            daysPresent:
-                metrics.DaysPresent || 0,
+            daysPresent: daysPresent,
 
-            daysAbsent:
-                metrics.DaysAbsent || 0,
+            daysAbsent: daysAbsent,
 
-            attendancePercentage:
-                metrics.AttendancePercentage || 0
+            attendancePercentage: attendancePercentage
 
         });
 
