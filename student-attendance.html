@@ -862,6 +862,38 @@
 
 
     </script>
+    <!-- Floating AI Button -->
+    <button id="ai-btn" onclick="toggleAIChat()"
+        style="position: fixed; bottom: 20px; right: 20px; background-color: #4285F4; color: white; border: none; padding: 12px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">
+        🤖 Ask AI Tutor
+    </button>
+
+    <!-- AI Assistant Modal -->
+    <div id="ai-modal"
+        style="display: none; position: fixed; bottom: 80px; right: 20px; width: 320px; background: #1e1e2d; color: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); padding: 15px; z-index: 1000; font-family: sans-serif;">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 8px;">
+            <h3 style="margin: 0; font-size: 15px;">Gemini Academic Assistant</h3>
+            <button onclick="toggleAIChat()"
+                style="background: none; border: none; color: white; font-weight: bold; cursor: pointer;">✕</button>
+        </div>
+
+        <div id="chat-box" style="height: 220px; overflow-y: auto; margin: 10px 0; font-size: 13px;">
+            <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
+                <br>
+                <br>
+                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+        </div>
+
+        <div style="display: flex; gap: 5px;">
+            <input type="text" id="user-input" placeholder="Ask something..."
+                style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #444; background: #2b2b3d; color: white; outline: none;">
+            <button onclick="sendToGemini()"
+                style="background: #34A853; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">Send</button>
+        </div>
+    </div>
+
+    <script src="ai-assistant.js"></script>
 
 
 </body>
