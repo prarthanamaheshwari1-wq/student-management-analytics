@@ -98,7 +98,7 @@ async function sendToGemini() {
 
   try {
     const response = await fetch(
-      "https://student-management-analytics.onrender.com/ai-assistant",
+      "https://student-management-analytics-1.onrender.com/ai-assistant",
       {
         method: "POST",
         headers: {
