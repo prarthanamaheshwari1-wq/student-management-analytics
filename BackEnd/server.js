@@ -214,6 +214,82 @@ app.get("/students", async (req, res) => {
     }
 
 });
+// app.post("/ai-assistant", async (req, res) => {
+//     try {
+//         const { question } = req.body;
+
+//         if (!question || !question.trim()) {
+//             return res.status(400).json({
+//                 error: "Question is required"
+//             });
+//         }
+
+//         const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+//         if (!GEMINI_API_KEY) {
+//             return res.status(500).json({
+//                 error: "Gemini API key is not configured on the server"
+//             });
+//         }
+
+//         const response = await fetch(
+//             `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${GEMINI_API_KEY}`,
+//             {
+//                 method: "POST",
+//                 headers: {
+//                     "Content-Type": "application/json"
+//                 },
+//                 body: JSON.stringify({
+//                     contents: [
+//                         {
+//                             parts: [
+//                                 {
+//                                     text: `You are an AI Academic Assistant for a Student Management System built under UN SDG 4 (Quality Education).
+
+// Your role:
+// - Help students with study plans.
+// - Help improve attendance.
+// - Give exam preparation tips.
+// - Explain academic concepts.
+// - Provide career guidance.
+// - Answer in a clear and student-friendly way.
+
+// Question: ${question}`
+//                                 }
+//                             ]
+//                         }
+//                     ]
+//                 })
+//             }
+//         );
+
+//         const data = await response.json();
+
+//         if (!response.ok) {
+//             console.error("Gemini API Error:", data);
+
+//             return res.status(response.status).json({
+//                 error: data.error?.message || "Gemini API request failed"
+//             });
+//         }
+
+//         const aiReply =
+//             data.candidates?.[0]?.content?.parts?.[0]?.text ||
+//             "Sorry, I couldn't generate a response.";
+
+//         res.json({
+//             reply: aiReply
+//         });
+
+//     } catch (error) {
+//         console.error("AI Assistant Error:", error);
+
+//         res.status(500).json({
+//             error: "Unable to connect to AI Assistant",
+//             details: error.message
+//         });
+//     }
+// });
 app.post("/ai-assistant", async (req, res) => {
     try {
         const { question } = req.body;
@@ -232,19 +308,27 @@ app.post("/ai-assistant", async (req, res) => {
             });
         }
 
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    contents: [
-                        {
-                            parts: [
-                                {
-                                    text: `You are an AI Academic Assistant for a Student Management System built under UN SDG 4 (Quality Education).
+        const model = "gemini-3.7-flash";
+
+        let response;
+        let data;
+
+        // Try up to 3 times if Gemini is temporarily busy
+        for (let attempt = 1; attempt <= 3; attempt++) {
+
+            response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        contents: [
+                            {
+                                parts: [
+                                    {
+                                        text: `You are an AI Academic Assistant for a Student Management System built under UN SDG 4 (Quality Education).
 
 Your role:
 - Help students with study plans.
@@ -254,22 +338,57 @@ Your role:
 - Provide career guidance.
 - Answer in a clear and student-friendly way.
 
+Keep answers clear, useful, concise, and student-friendly.
+
 Question: ${question}`
-                                }
-                            ]
-                        }
-                    ]
-                })
+                                    }
+                                ]
+                            }
+                        ]
+                    })
+                }
+            );
+
+            data = await response.json();
+
+            // Success
+            if (response.ok) {
+                break;
             }
-        );
 
-        const data = await response.json();
+            console.error(
+                `Gemini attempt ${attempt} failed:`,
+                data.error?.message || data
+            );
 
+            // Retry only for temporary overload/rate-limit errors
+            if (
+                (response.status === 429 || response.status === 503) &&
+                attempt < 3
+            ) {
+                const delay = attempt * 3000;
+
+                console.log(
+                    `Gemini is temporarily unavailable. Retrying in ${delay / 1000} seconds...`
+                );
+
+                await new Promise(resolve =>
+                    setTimeout(resolve, delay)
+                );
+
+                continue;
+            }
+
+            // Don't retry other errors
+            break;
+        }
+
+        // Gemini still failed after retries
         if (!response.ok) {
-            console.error("Gemini API Error:", data);
-
             return res.status(response.status).json({
-                error: data.error?.message || "Gemini API request failed"
+                error:
+                    data.error?.message ||
+                    "Gemini API request failed. Please try again later."
             });
         }
 
