@@ -844,10 +844,36 @@ app.delete("/students/:id", async (req, res) => {
 // GET ALL TEACHERS
 // ======================================================
 
+// app.get("/teachers", async (req, res) => {
+
+//     try {
+
+//         const pool = await poolPromise;
+
+//         const result = await pool
+//             .request()
+//             .query(`
+//                 SELECT *
+//                 FROM Teacher
+//                 ORDER BY Teacher_id
+//             `);
+
+//         res.json(result.recordset);
+
+//     } catch (error) {
+
+//         console.error("Get Teachers Error:", error);
+
+//         res.status(500).json({
+//             error: "Unable to fetch teachers",
+//             details: error.message
+//         });
+
+//     }
+
+// });
 app.get("/teachers", async (req, res) => {
-
     try {
-
         const pool = await poolPromise;
 
         const result = await pool
@@ -855,24 +881,21 @@ app.get("/teachers", async (req, res) => {
             .query(`
                 SELECT *
                 FROM Teacher
+                WHERE IsActive = 1
                 ORDER BY Teacher_id
             `);
 
         res.json(result.recordset);
 
     } catch (error) {
-
         console.error("Get Teachers Error:", error);
 
         res.status(500).json({
             error: "Unable to fetch teachers",
             details: error.message
         });
-
     }
-
 });
-
 // ======================================================
 // GET ONE TEACHER
 // ======================================================
@@ -1200,41 +1223,85 @@ app.put("/teachers/:id", async (req, res) => {
 // DELETE TEACHER
 // ======================================================
 
+// app.delete("/teachers/:id", async (req, res) => {
+
+//     try {
+
+//         const teacherId =
+//             parseInt(req.params.id, 10);
+
+//         if (isNaN(teacherId)) {
+
+//             return res.status(400).json({
+//                 error: "Invalid Teacher ID"
+//             });
+
+//         }
+
+//         const pool = await poolPromise;
+
+//         const result = await pool
+//             .request()
+//             .input(
+//                 "Teacher_id",
+//                 sql.Int,
+//                 teacherId
+//             )
+//             .query(`
+//                 DELETE FROM Teacher
+//                 WHERE Teacher_id = @Teacher_id
+//             `);
+
+//         if (result.rowsAffected[0] === 0) {
+
+//             return res.status(404).json({
+//                 error: "Teacher not found"
+//             });
+
+//         }
+
+//         res.json({
+//             message: "Teacher deleted successfully"
+//         });
+
+//     } catch (error) {
+
+//         console.error("Delete Teacher Error:", error);
+
+//         res.status(500).json({
+//             error: "Unable to delete teacher",
+//             details: error.message
+//         });
+
+//     }
+
+// });
 app.delete("/teachers/:id", async (req, res) => {
-
     try {
-
-        const teacherId =
-            parseInt(req.params.id, 10);
+        const teacherId = parseInt(req.params.id, 10);
 
         if (isNaN(teacherId)) {
-
             return res.status(400).json({
                 error: "Invalid Teacher ID"
             });
-
         }
 
         const pool = await poolPromise;
 
         const result = await pool
             .request()
-            .input(
-                "Teacher_id",
-                sql.Int,
-                teacherId
-            )
+            .input("Teacher_id", sql.Int, teacherId)
             .query(`
-                DELETE FROM Teacher
+                UPDATE Teacher
+                SET IsActive = 0
                 WHERE Teacher_id = @Teacher_id
+                  AND IsActive = 1
             `);
 
         if (result.rowsAffected[0] === 0) {
-
             return res.status(404).json({
-                error: "Teacher not found"
+                error: "Teacher not found or already deleted"
             });
-
         }
 
         res.json({
@@ -1242,16 +1309,13 @@ app.delete("/teachers/:id", async (req, res) => {
         });
 
     } catch (error) {
-
         console.error("Delete Teacher Error:", error);
 
         res.status(500).json({
             error: "Unable to delete teacher",
             details: error.message
         });
-
     }
-
 });
 
 // ======================================================
