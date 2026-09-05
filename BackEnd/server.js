@@ -18,22 +18,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 function auth(roles = []) {
-  return (req, res, next) => {
-    const header = req.headers["authorization"] || "";
-    const token = header.startsWith("Bearer ") ? header.slice(7) : null;
-    if (!token) return res.status(401).json({ success: false, message: "No token provided" });
+    return (req, res, next) => {
+        const header = req.headers["authorization"] || "";
+        const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+        if (!token) return res.status(401).json({ success: false, message: "No token provided" });
 
-    try {
-      const payload = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = payload; // { id, username, role }
-      if (roles.length && !roles.includes(payload.role)) {
-        return res.status(403).json({ success: false, message: "Access denied for role: " + payload.role });
-      }
-      next();
-    } catch (err) {
-      return res.status(401).json({ success: false, message: "Invalid or expired token" });
-    }
-  };
+        try {
+            const payload = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = payload; // { id, username, role }
+            if (roles.length && !roles.includes(payload.role)) {
+                return res.status(403).json({ success: false, message: "Access denied for role: " + payload.role });
+            }
+            next();
+        } catch (err) {
+            return res.status(401).json({ success: false, message: "Invalid or expired token" });
+        }
+    };
 }
 
 
@@ -82,9 +82,9 @@ app.get("/test-db", async (req, res) => {
 // ======================================================
 
 const ROLE_CONFIG = {
-  admin:   { table: "Admin",   idField: "Admin_id" },
-  teacher: { table: "Teacher", idField: "Teacher_id" },
-  student: { table: "Student", idField: "Student_id" },
+    admin: { table: "Admin", idField: "Admin_id" },
+    teacher: { table: "Teacher", idField: "Teacher_id" },
+    student: { table: "Student", idField: "Student_id" },
 };
 app.post("/login", async (req, res) => {
     try {
@@ -172,9 +172,9 @@ app.post("/login", async (req, res) => {
 
     } catch (error) {
         console.error("LOGIN ERROR DETAILS:", error);
-        res.status(500).json({ 
-            error: "Server error during login", 
-            details: error.message 
+        res.status(500).json({
+            error: "Server error during login",
+            details: error.message
         });
     }
 });
@@ -957,6 +957,137 @@ app.get("/teachers/:id", async (req, res) => {
 // ADD TEACHER
 // ======================================================
 
+// app.post("/teachers", async (req, res) => {
+
+//     console.log("POST /teachers received");
+//     console.log("Teacher data:", req.body);
+
+//     try {
+
+//         const {
+//             First_Name,
+//             Last_Name,
+//             Subject,
+//             Phone_No,
+//             Email,
+//             Qualification,
+//             Joining_Date,
+//             Address
+//         } = req.body;
+//         if (!First_Name || !Last_Name) {
+
+//             return res.status(400).json({
+//                 error: "First Name and Last Name are required"
+//             });
+
+//         }
+
+//         const pool = await poolPromise;
+
+//         const result = await pool
+//             .request()
+
+//             .input(
+//                 "First_Name",
+//                 sql.VarChar(100),
+//                 First_Name
+//             )
+
+//             .input(
+//                 "Last_Name",
+//                 sql.VarChar(100),
+//                 Last_Name
+//             )
+
+//             .input(
+//                 "Subject",
+//                 sql.VarChar(100),
+//                 Subject || null
+//             )
+
+//             .input(
+//                 "Phone_No",
+//                 sql.VarChar(20),
+//                 Phone_No || null
+//             )
+
+//             .input(
+//                 "Email",
+//                 sql.VarChar(150),
+//                 Email || null
+//             )
+
+//             .input(
+//                 "Qualification",
+//                 sql.VarChar(200),
+//                 Qualification || null
+//             )
+
+//             .input(
+//                 "Joining_Date",
+//                 sql.Date,
+//                 Joining_Date || null
+//             )
+
+//             .input(
+//                 "Address",
+//                 sql.VarChar(255),
+//                 Address || null
+//             )
+
+//             .query(`
+//                 INSERT INTO Teacher
+//                 (
+//                     First_Name,
+//                     Last_Name,
+//                     Subject,
+//                     Phone_No,
+//                     Email,
+//                     Qualification,
+//                     Joining_Date,
+//                     Address
+//                 )
+
+//                 OUTPUT INSERTED.*
+
+//                 VALUES
+//                 (
+//                     @First_Name,
+//                     @Last_Name,
+//                     @Subject,
+//                     @Phone_No,
+//                     @Email,
+//                     @Qualification,
+//                     @Joining_Date,
+//                     @Address
+//                 )
+//             `);
+
+//         res.status(201).json({
+
+//             message: "Teacher added successfully",
+
+//             teacher: result.recordset[0]
+
+//         });
+
+//     } catch (error) {
+
+//         console.error("Add Teacher Error:", error);
+
+//         res.status(500).json({
+
+//             error: "Unable to add teacher",
+
+//             details: error.message
+
+//         });
+
+//     }
+
+// });
+
+
 app.post("/teachers", async (req, res) => {
 
     console.log("POST /teachers received");
@@ -984,6 +1115,16 @@ app.post("/teachers", async (req, res) => {
         }
 
         const pool = await poolPromise;
+
+        // Generate username automatically
+        const Username =
+            (First_Name + Last_Name)
+                .toLowerCase()
+                .replace(/\s+/g, "") +
+            Math.floor(Math.random() * 1000);
+
+        // Default password
+        const Password = "teacher123";
 
         const result = await pool
             .request()
@@ -1031,6 +1172,18 @@ app.post("/teachers", async (req, res) => {
             )
 
             .input(
+                "Username",
+                sql.VarChar(50),
+                Username
+            )
+
+            .input(
+                "Password",
+                sql.VarChar(255),
+                Password
+            )
+
+            .input(
                 "Address",
                 sql.VarChar(255),
                 Address || null
@@ -1046,6 +1199,8 @@ app.post("/teachers", async (req, res) => {
                     Email,
                     Qualification,
                     Joining_Date,
+                    Username,
+                    Password,
                     Address
                 )
 
@@ -1060,6 +1215,8 @@ app.post("/teachers", async (req, res) => {
                     @Email,
                     @Qualification,
                     @Joining_Date,
+                    @Username,
+                    @Password,
                     @Address
                 )
             `);
@@ -1067,6 +1224,10 @@ app.post("/teachers", async (req, res) => {
         res.status(201).json({
 
             message: "Teacher added successfully",
+
+            username: Username,
+
+            password: Password,
 
             teacher: result.recordset[0]
 
@@ -1087,7 +1248,6 @@ app.post("/teachers", async (req, res) => {
     }
 
 });
-
 // ======================================================
 // UPDATE TEACHER
 // ======================================================
