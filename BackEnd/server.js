@@ -641,6 +641,9 @@ Important rules:
 - If the requested information is not available in the provided data, clearly say that it is not available.
 - Give clear, useful, concise, student-friendly answers.
 - When discussing performance, use the actual numbers from the data.
+- Do not state that a specific attendance percentage is mandatory unless that requirement is explicitly provided in the student's data.
+- Do not claim that low attendance will make the student ineligible for an examination unless such a rule is provided in the system data.
+- You may describe low attendance as a concern and recommend checking the school's attendance policy.
 
 Student Question:
 ${question}
