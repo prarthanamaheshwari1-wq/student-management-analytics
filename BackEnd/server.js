@@ -455,13 +455,13 @@ app.post("/ai-assistant", async (req, res) => {
         // const totalWorkingDays =
         //     attendanceRecords.length;
         const workingDaysResult = await pool
-                .request()
-                .query(`
+            .request()
+            .query(`
                     SELECT COUNT(DISTINCT Attendence_Date) AS TotalWorkingDays
                     FROM Attendence
                 `);
-        const totalWorkingDays = 
-                Number(workingDaysResult.recordset[0]?.TotalWorkingDays) || 0;
+        const totalWorkingDays =
+            Number(workingDaysResult.recordset[0]?.TotalWorkingDays) || 0;
 
         const daysPresent =
             attendanceRecords.filter(
@@ -522,6 +522,38 @@ app.post("/ai-assistant", async (req, res) => {
                 ? (totalMarks / marksRecords.length).toFixed(2)
                 : "0.00";
 
+
+        // ==========================================
+        // CALCULATE SUBJECT-WISE PERFORMANCE
+        // ==========================================
+
+        const subjectPerformance = {};
+
+        marksRecords.forEach(record => {
+
+            const subject = record.Subject;
+            const marks = Number(record.Marks || 0);
+
+            if (!subjectPerformance[subject]) {
+                subjectPerformance[subject] = {
+                    total: 0,
+                    count: 0
+                };
+            }
+
+            subjectPerformance[subject].total += marks;
+            subjectPerformance[subject].count += 1;
+        });
+
+        const subjectAverages = Object.entries(subjectPerformance).map(
+            ([subject, data]) => ({
+                subject,
+                averageMarks: Number(
+                    (data.total / data.count).toFixed(2)
+                )
+            })
+        );
+
         // ==========================================
         // PREPARE ACADEMIC DATA FOR GEMINI
         // ==========================================
@@ -546,7 +578,9 @@ app.post("/ai-assistant", async (req, res) => {
 
             marks: marksRecords,
 
-            averageMarks
+            averageMarks,
+
+            subjectAverages
         };
 
         // ==========================================
@@ -588,12 +622,15 @@ Student Academic Data:
 ${JSON.stringify(academicData, null, 2)}
 
 Your role:
-- Analyze the student's attendance.
-- Analyze the student's marks.
-- Identify academic strengths.
-- Identify areas that need improvement.
-- Give study recommendations.
-- Suggest ways to improve attendance.
+- Analyze the student's attendance and marks together.
+- Calculate and explain the student's overall academic performance.
+- Identify the student's strongest subjects using the provided subject averages.
+- Identify subjects that need improvement.
+- Detect possible academic risk based on low marks and/or low attendance.
+- Assign a simple academic risk level: Low, Medium, or High.
+- Explain clearly why that risk level was assigned.
+- Give personalized study recommendations based only on the student's actual data.
+- Suggest ways to improve attendance when attendance is low.
 - Help with exam preparation.
 - Explain academic concepts.
 - Provide career guidance when asked.
