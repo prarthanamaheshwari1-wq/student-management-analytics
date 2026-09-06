@@ -86,98 +86,6 @@ const ROLE_CONFIG = {
     teacher: { table: "Teacher", idField: "Teacher_id" },
     student: { table: "Student", idField: "Student_id" },
 };
-// app.post("/login", async (req, res) => {
-//     try {
-//         const { username, password } = req.body;
-
-//         if (!username || !password) {
-//             return res.status(400).json({ error: "Username and password are required." });
-//         }
-
-//         const pool = await poolPromise;
-
-//         // ------------------------------------------
-//         // 1. CHECK ADMIN TABLE FIRST
-//         // ------------------------------------------
-//         const adminResult = await pool
-//             .request()
-//             .input("username", sql.VarChar, username)
-//             .input("password", sql.VarChar, password)
-//             .query(`
-//                 SELECT * FROM Admin 
-//                 WHERE Username = @username AND Password = @password
-//             `);
-
-//         if (adminResult.recordset.length > 0) {
-//             const admin = adminResult.recordset[0];
-//             return res.json({
-//                 message: "Admin login successful",
-//                 role: "admin",
-//                 adminId: admin.Admin_id,
-//                 user: admin
-//             });
-//         }
-
-//         // ------------------------------------------
-//         // 2. CHECK TEACHER TABLE SECOND
-//         // ------------------------------------------
-//         const teacherResult = await pool
-//             .request()
-//             .input("username", sql.VarChar, username)
-//             .input("password", sql.VarChar, password)
-//             .query(`
-//                 SELECT * FROM Teacher 
-//                 WHERE (Email = @username OR Username = @username) 
-//                   AND Password = @password
-//             `);
-
-//         if (teacherResult.recordset.length > 0) {
-//             const teacher = teacherResult.recordset[0];
-//             return res.json({
-//                 message: "Teacher login successful",
-//                 role: "teacher",
-//                 teacherId: teacher.Teacher_id || teacher.id,
-//                 user: teacher
-//             });
-//         }
-
-//         // ------------------------------------------
-//         // 3. CHECK STUDENT TABLE THIRD
-//         // ------------------------------------------
-//         const studentResult = await pool
-//             .request()
-//             .input("username", sql.VarChar, username)
-//             .input("password", sql.VarChar, password)
-//             .query(`
-//                 SELECT *, (First_Name + ' ' + Last_Name) AS Name
-//                 FROM Student
-//                 WHERE (Username = @username OR Email = @username OR CAST(Roll_No AS VARCHAR) = @username) 
-//                   AND Password = @password
-//             `);
-
-//         if (studentResult.recordset.length > 0) {
-//             const student = studentResult.recordset[0];
-//             return res.json({
-//                 message: "Student login successful",
-//                 role: "student",
-//                 studentId: student.Student_id,
-//                 user: student
-//             });
-//         }
-
-//         // ------------------------------------------
-//         // IF NO MATCH FOUND IN ANY TABLE
-//         // ------------------------------------------
-//         return res.status(401).json({ error: "Invalid username/email or password." });
-
-//     } catch (error) {
-//         console.error("LOGIN ERROR DETAILS:", error);
-//         res.status(500).json({
-//             error: "Server error during login",
-//             details: error.message
-//         });
-//     }
-// });
 app.post("/login", async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -357,11 +265,14 @@ app.get("/students", async (req, res) => {
 
 });
 
-app.post("/ai-assistant", async (req, res) => {
+// app.post("/ai-assistant", async (req, res) => {
+app.post("/ai-assistant", auth(["student"]), async (req, res) => {
 
     try {
 
-        const { question, studentId } = req.body;
+        // const { question, studentId } = req.body;
+        const { question } = req.body;
+        const studentId = req.user.id;
 
         // ==========================================
         // VALIDATE QUESTION
