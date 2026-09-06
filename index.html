@@ -884,6 +884,8 @@
                 // Save session info
                 localStorage.setItem("role", data.role);
                 localStorage.setItem("user", JSON.stringify(data.user));
+                console.log("TOKEN BEFORE STORAGE:", data.token);
+                localStorage.setItem("token", data.token);
 
                 // Redirect based on role
                 if (data.role === "student") {

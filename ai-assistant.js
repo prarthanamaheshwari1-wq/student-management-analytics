@@ -27,16 +27,27 @@ async function sendToGemini() {
   chatBox.scrollTop = chatBox.scrollHeight;
 
   try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      chatBox.innerHTML += `
+    <p style="color: #ff4d4d;">
+      <strong>Error:</strong> Please log in again.
+    </p>
+  `;
+      return;
+    }
     const response = await fetch(
       "https://student-management-analytics-1.onrender.com/ai-assistant",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          question: userQuery , 
-          studentId: localStorage.getItem("studentId")
+          question: userQuery,
+          // studentId: localStorage.getItem("studentId")
         })
       }
     );
@@ -88,10 +99,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const inputField = document.getElementById("user-input");
   if (inputField) {
     inputField.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendToGemini();
-  }
-});
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendToGemini();
+      }
+    });
   }
 });
