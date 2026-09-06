@@ -86,12 +86,106 @@ const ROLE_CONFIG = {
     teacher: { table: "Teacher", idField: "Teacher_id" },
     student: { table: "Student", idField: "Student_id" },
 };
+// app.post("/login", async (req, res) => {
+//     try {
+//         const { username, password } = req.body;
+
+//         if (!username || !password) {
+//             return res.status(400).json({ error: "Username and password are required." });
+//         }
+
+//         const pool = await poolPromise;
+
+//         // ------------------------------------------
+//         // 1. CHECK ADMIN TABLE FIRST
+//         // ------------------------------------------
+//         const adminResult = await pool
+//             .request()
+//             .input("username", sql.VarChar, username)
+//             .input("password", sql.VarChar, password)
+//             .query(`
+//                 SELECT * FROM Admin 
+//                 WHERE Username = @username AND Password = @password
+//             `);
+
+//         if (adminResult.recordset.length > 0) {
+//             const admin = adminResult.recordset[0];
+//             return res.json({
+//                 message: "Admin login successful",
+//                 role: "admin",
+//                 adminId: admin.Admin_id,
+//                 user: admin
+//             });
+//         }
+
+//         // ------------------------------------------
+//         // 2. CHECK TEACHER TABLE SECOND
+//         // ------------------------------------------
+//         const teacherResult = await pool
+//             .request()
+//             .input("username", sql.VarChar, username)
+//             .input("password", sql.VarChar, password)
+//             .query(`
+//                 SELECT * FROM Teacher 
+//                 WHERE (Email = @username OR Username = @username) 
+//                   AND Password = @password
+//             `);
+
+//         if (teacherResult.recordset.length > 0) {
+//             const teacher = teacherResult.recordset[0];
+//             return res.json({
+//                 message: "Teacher login successful",
+//                 role: "teacher",
+//                 teacherId: teacher.Teacher_id || teacher.id,
+//                 user: teacher
+//             });
+//         }
+
+//         // ------------------------------------------
+//         // 3. CHECK STUDENT TABLE THIRD
+//         // ------------------------------------------
+//         const studentResult = await pool
+//             .request()
+//             .input("username", sql.VarChar, username)
+//             .input("password", sql.VarChar, password)
+//             .query(`
+//                 SELECT *, (First_Name + ' ' + Last_Name) AS Name
+//                 FROM Student
+//                 WHERE (Username = @username OR Email = @username OR CAST(Roll_No AS VARCHAR) = @username) 
+//                   AND Password = @password
+//             `);
+
+//         if (studentResult.recordset.length > 0) {
+//             const student = studentResult.recordset[0];
+//             return res.json({
+//                 message: "Student login successful",
+//                 role: "student",
+//                 studentId: student.Student_id,
+//                 user: student
+//             });
+//         }
+
+//         // ------------------------------------------
+//         // IF NO MATCH FOUND IN ANY TABLE
+//         // ------------------------------------------
+//         return res.status(401).json({ error: "Invalid username/email or password." });
+
+//     } catch (error) {
+//         console.error("LOGIN ERROR DETAILS:", error);
+//         res.status(500).json({
+//             error: "Server error during login",
+//             details: error.message
+//         });
+//     }
+// });
 app.post("/login", async (req, res) => {
     try {
         const { username, password } = req.body;
 
         if (!username || !password) {
-            return res.status(400).json({ error: "Username and password are required." });
+            return res.status(400).json({
+                error: "Username and password are required."
+            });
         }
 
         const pool = await poolPromise;
@@ -110,11 +204,25 @@ app.post("/login", async (req, res) => {
 
         if (adminResult.recordset.length > 0) {
             const admin = adminResult.recordset[0];
+
+            const token = jwt.sign(
+                {
+                    id: admin.Admin_id,
+                    username: admin.Username,
+                    role: "admin"
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: "2h" }
+            );
+
+            const { Password, ...safeAdmin } = admin;
+
             return res.json({
                 message: "Admin login successful",
                 role: "admin",
                 adminId: admin.Admin_id,
-                user: admin
+                user: safeAdmin,
+                token
             });
         }
 
@@ -133,11 +241,27 @@ app.post("/login", async (req, res) => {
 
         if (teacherResult.recordset.length > 0) {
             const teacher = teacherResult.recordset[0];
+
+            const teacherId = teacher.Teacher_id || teacher.id;
+
+            const token = jwt.sign(
+                {
+                    id: teacherId,
+                    username: teacher.Username || teacher.Email,
+                    role: "teacher"
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: "2h" }
+            );
+
+            const { Password, ...safeTeacher } = teacher;
+
             return res.json({
                 message: "Teacher login successful",
                 role: "teacher",
-                teacherId: teacher.Teacher_id || teacher.id,
-                user: teacher
+                teacherId: teacherId,
+                user: safeTeacher,
+                token
             });
         }
 
@@ -157,21 +281,39 @@ app.post("/login", async (req, res) => {
 
         if (studentResult.recordset.length > 0) {
             const student = studentResult.recordset[0];
+
+            const token = jwt.sign(
+                {
+                    id: student.Student_id,
+                    username: student.Username,
+                    role: "student"
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: "2h" }
+            );
+
+            // Remove password before sending user data to frontend
+            const { Password, ...safeStudent } = student;
+
             return res.json({
                 message: "Student login successful",
                 role: "student",
                 studentId: student.Student_id,
-                user: student
+                user: safeStudent,
+                token
             });
         }
 
         // ------------------------------------------
         // IF NO MATCH FOUND IN ANY TABLE
         // ------------------------------------------
-        return res.status(401).json({ error: "Invalid username/email or password." });
+        return res.status(401).json({
+            error: "Invalid username/email or password."
+        });
 
     } catch (error) {
         console.error("LOGIN ERROR DETAILS:", error);
+
         res.status(500).json({
             error: "Server error during login",
             details: error.message
@@ -215,125 +357,6 @@ app.get("/students", async (req, res) => {
 
 });
 
-// app.post("/ai-assistant", async (req, res) => {
-//     try {
-//         const { question } = req.body;
-
-//         if (!question || !question.trim()) {
-//             return res.status(400).json({
-//                 error: "Question is required"
-//             });
-//         }
-
-//         const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-//         if (!GEMINI_API_KEY) {
-//             return res.status(500).json({
-//                 error: "Gemini API key is not configured on the server"
-//             });
-//         }
-
-//         const model = "gemini-3.7-flash";
-
-//         let response;
-//         let data;
-
-//         // Try up to 3 times if Gemini is temporarily busy
-//         for (let attempt = 1; attempt <= 3; attempt++) {
-
-//             response = await fetch(
-//                 `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-//                 {
-//                     method: "POST",
-//                     headers: {
-//                         "Content-Type": "application/json"
-//                     },
-//                     body: JSON.stringify({
-//                         contents: [
-//                             {
-//                                 parts: [
-//                                     {
-//                                         text: `You are an AI Academic Assistant for a Student Management System built under UN SDG 4 (Quality Education).
-
-// Your role:
-// - Help students with study plans.
-// - Help improve attendance.
-// - Give exam preparation tips.
-// - Explain academic concepts.
-// - Provide career guidance.
-// - Answer in a clear and student-friendly way.
-
-// Keep answers clear, useful, concise, and student-friendly.
-
-// Question: ${question}`
-//                                     }
-//                                 ]
-//                             }
-//                         ]
-//                     })
-//                 }
-//             );
-
-//             data = await response.json();
-
-//             // Success
-//             if (response.ok) {
-//                 break;
-//             }
-
-//             console.error(
-//                 `Gemini attempt ${attempt} failed:`,
-//                 data.error?.message || data
-//             );
-
-//             // Retry only for temporary overload/rate-limit errors
-//             if (
-//                 (response.status === 429 || response.status === 503) &&
-//                 attempt < 3
-//             ) {
-//                 const delay = attempt * 3000;
-
-//                 console.log(
-//                     `Gemini is temporarily unavailable. Retrying in ${delay / 1000} seconds...`
-//                 );
-
-//                 await new Promise(resolve =>
-//                     setTimeout(resolve, delay)
-//                 );
-
-//                 continue;
-//             }
-
-//             // Don't retry other errors
-//             break;
-//         }
-
-//         // Gemini still failed after retries
-//         if (!response.ok) {
-//             return res.status(response.status).json({
-//                 error:
-//                     data.error?.message ||
-//                     "Gemini API request failed. Please try again later."
-//             });
-//         }
-
-//         const aiReply =
-//             data.candidates?.[0]?.content?.parts?.[0]?.text ||
-//             "Sorry, I couldn't generate a response.";
-
-//         res.json({
-//             reply: aiReply
-//         });
-
-//     } catch (error) {
-//         console.error("AI Assistant Error:", error);
-
-//         res.status(500).json({
-//             error: "Unable to connect to AI Assistant",
-//             details: error.message
-//         });
-//     }
-// });
 app.post("/ai-assistant", async (req, res) => {
 
     try {
@@ -429,8 +452,16 @@ app.post("/ai-assistant", async (req, res) => {
         // CALCULATE ATTENDANCE
         // ==========================================
 
-        const totalWorkingDays =
-            attendanceRecords.length;
+        // const totalWorkingDays =
+        //     attendanceRecords.length;
+        const workingDaysResult = await pool
+                .request()
+                .query(`
+                    SELECT COUNT(DISTINCT Attendence_Date) AS TotalWorkingDays
+                    FROM Attendence
+                `);
+        const totalWorkingDays = 
+                Number(workingDaysResult.recordset[0]?.TotalWorkingDays) || 0;
 
         const daysPresent =
             attendanceRecords.filter(
@@ -439,12 +470,16 @@ app.post("/ai-assistant", async (req, res) => {
                     record.Status.toLowerCase() === "present"
             ).length;
 
-        const daysAbsent =
-            attendanceRecords.filter(
-                record =>
-                    record.Status &&
-                    record.Status.toLowerCase() === "absent"
-            ).length;
+        // const daysAbsent =
+        //     attendanceRecords.filter(
+        //         record =>
+        //             record.Status &&
+        //             record.Status.toLowerCase() === "absent"
+        //     ).length;
+        const daysAbsent = Math.max(
+            totalWorkingDays - daysPresent,
+            0
+        );
 
         const attendancePercentage =
             totalWorkingDays > 0
@@ -1109,34 +1144,6 @@ app.delete("/students/:id", async (req, res) => {
 // GET ALL TEACHERS
 // ======================================================
 
-// app.get("/teachers", async (req, res) => {
-
-//     try {
-
-//         const pool = await poolPromise;
-
-//         const result = await pool
-//             .request()
-//             .query(`
-//                 SELECT *
-//                 FROM Teacher
-//                 ORDER BY Teacher_id
-//             `);
-
-//         res.json(result.recordset);
-
-//     } catch (error) {
-
-//         console.error("Get Teachers Error:", error);
-
-//         res.status(500).json({
-//             error: "Unable to fetch teachers",
-//             details: error.message
-//         });
-
-//     }
-
-// });
 app.get("/teachers", async (req, res) => {
     try {
         const pool = await poolPromise;
@@ -1221,137 +1228,6 @@ app.get("/teachers/:id", async (req, res) => {
 // ======================================================
 // ADD TEACHER
 // ======================================================
-
-// app.post("/teachers", async (req, res) => {
-
-//     console.log("POST /teachers received");
-//     console.log("Teacher data:", req.body);
-
-//     try {
-
-//         const {
-//             First_Name,
-//             Last_Name,
-//             Subject,
-//             Phone_No,
-//             Email,
-//             Qualification,
-//             Joining_Date,
-//             Address
-//         } = req.body;
-//         if (!First_Name || !Last_Name) {
-
-//             return res.status(400).json({
-//                 error: "First Name and Last Name are required"
-//             });
-
-//         }
-
-//         const pool = await poolPromise;
-
-//         const result = await pool
-//             .request()
-
-//             .input(
-//                 "First_Name",
-//                 sql.VarChar(100),
-//                 First_Name
-//             )
-
-//             .input(
-//                 "Last_Name",
-//                 sql.VarChar(100),
-//                 Last_Name
-//             )
-
-//             .input(
-//                 "Subject",
-//                 sql.VarChar(100),
-//                 Subject || null
-//             )
-
-//             .input(
-//                 "Phone_No",
-//                 sql.VarChar(20),
-//                 Phone_No || null
-//             )
-
-//             .input(
-//                 "Email",
-//                 sql.VarChar(150),
-//                 Email || null
-//             )
-
-//             .input(
-//                 "Qualification",
-//                 sql.VarChar(200),
-//                 Qualification || null
-//             )
-
-//             .input(
-//                 "Joining_Date",
-//                 sql.Date,
-//                 Joining_Date || null
-//             )
-
-//             .input(
-//                 "Address",
-//                 sql.VarChar(255),
-//                 Address || null
-//             )
-
-//             .query(`
-//                 INSERT INTO Teacher
-//                 (
-//                     First_Name,
-//                     Last_Name,
-//                     Subject,
-//                     Phone_No,
-//                     Email,
-//                     Qualification,
-//                     Joining_Date,
-//                     Address
-//                 )
-
-//                 OUTPUT INSERTED.*
-
-//                 VALUES
-//                 (
-//                     @First_Name,
-//                     @Last_Name,
-//                     @Subject,
-//                     @Phone_No,
-//                     @Email,
-//                     @Qualification,
-//                     @Joining_Date,
-//                     @Address
-//                 )
-//             `);
-
-//         res.status(201).json({
-
-//             message: "Teacher added successfully",
-
-//             teacher: result.recordset[0]
-
-//         });
-
-//     } catch (error) {
-
-//         console.error("Add Teacher Error:", error);
-
-//         res.status(500).json({
-
-//             error: "Unable to add teacher",
-
-//             details: error.message
-
-//         });
-
-//     }
-
-// });
-
 
 app.post("/teachers", async (req, res) => {
 
@@ -1648,59 +1524,6 @@ app.put("/teachers/:id", async (req, res) => {
 // DELETE TEACHER
 // ======================================================
 
-// app.delete("/teachers/:id", async (req, res) => {
-
-//     try {
-
-//         const teacherId =
-//             parseInt(req.params.id, 10);
-
-//         if (isNaN(teacherId)) {
-
-//             return res.status(400).json({
-//                 error: "Invalid Teacher ID"
-//             });
-
-//         }
-
-//         const pool = await poolPromise;
-
-//         const result = await pool
-//             .request()
-//             .input(
-//                 "Teacher_id",
-//                 sql.Int,
-//                 teacherId
-//             )
-//             .query(`
-//                 DELETE FROM Teacher
-//                 WHERE Teacher_id = @Teacher_id
-//             `);
-
-//         if (result.rowsAffected[0] === 0) {
-
-//             return res.status(404).json({
-//                 error: "Teacher not found"
-//             });
-
-//         }
-
-//         res.json({
-//             message: "Teacher deleted successfully"
-//         });
-
-//     } catch (error) {
-
-//         console.error("Delete Teacher Error:", error);
-
-//         res.status(500).json({
-//             error: "Unable to delete teacher",
-//             details: error.message
-//         });
-
-//     }
-
-// });
 app.delete("/teachers/:id", async (req, res) => {
     try {
         const teacherId = parseInt(req.params.id, 10);
