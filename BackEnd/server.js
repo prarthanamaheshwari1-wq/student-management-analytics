@@ -3619,7 +3619,7 @@ app.get("/students/:id", auth(["admin", "teacher", "student"]), async (req, res)
                     Section,
                     Gender,
                     Email,
-                    Phone_Number
+                    Phone_No
                 FROM Student
                 WHERE Student_id = @Student_id
             `);
