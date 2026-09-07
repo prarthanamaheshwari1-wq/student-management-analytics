@@ -1881,7 +1881,7 @@ app.put("/marks/:id", auth(["admin", "teacher"]), async (req, res) => {
 
 // GET ALL FEES
 // app.get("/fees", async (req, res) => {
-app.get("/fees", auth(["admin","student"]), async (req, res) => {
+app.get("/fees", auth(["admin", "student"]), async (req, res) => {
     try {
         const pool = await poolPromise;
         const result = await pool
@@ -3619,7 +3619,10 @@ app.get("/students/:id", auth(["admin", "teacher", "student"]), async (req, res)
                     Section,
                     Gender,
                     Email,
-                    Phone_No
+                    Phone_No,
+                    DOB,
+                    Address,
+                    Admission_Date
                 FROM Student
                 WHERE Student_id = @Student_id
             `);
