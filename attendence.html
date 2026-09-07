@@ -875,6 +875,12 @@
 
         const API_URL = "https://student-management-analytics.onrender.com";
 
+        const token = localStorage.getItem("token");
+
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
+
 
         // ==========================================
         // CURRENT USER ROLE
@@ -1017,7 +1023,10 @@
                  */
 
                 const response = await fetch(
-                    `${API_URL}/attendance/metrics?student_id=${studentId}`
+                    `${API_URL}/attendance/metrics?student_id=${studentId}`,
+                    {
+                        headers: authHeaders
+                    }
                 );
 
 
@@ -1121,7 +1130,10 @@
 
                 const response =
                     await fetch(
-                        `${API_URL}/attendence`
+                        `${API_URL}/attendence`,
+                        {
+                            headers: authHeaders
+                        }
                     );
 
 
@@ -1418,7 +1430,8 @@
 
                             headers: {
                                 "Content-Type":
-                                    "application/json"
+                                    "application/json",
+                                "Authorization": `Bearer ${token}`
                             },
 
                             body:
@@ -1542,7 +1555,8 @@
             <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
                 <br>
                 <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+                Ask me about study plans, attendance, exams, marks, or career guidance.
+            </p>
         </div>
 
         <div style="display: flex; gap: 5px;">

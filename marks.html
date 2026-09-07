@@ -497,6 +497,13 @@
     <script>
         const API_URL = "https://student-management-analytics.onrender.com";
         // const API_URL = "http://localhost:5000";
+
+        const token = localStorage.getItem("token");
+
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
+
         let marksCache = [];
         let editingId = null;
 
@@ -511,7 +518,10 @@
                     </tr>
                 `;
 
-                const response = await fetch(`${API_URL}/marks`);
+                // const response = await fetch(`${API_URL}/marks`);
+                const response = await fetch(`${API_URL}/marks`, {
+                    headers: authHeaders
+                });
 
                 if (!response.ok) {
                     throw new Error(`HTTP Error: ${response.status}`);
@@ -614,10 +624,18 @@ Exam Type: ${record.Exam_Type}`);
                 const endpoint = isEdit ? `${API_URL}/marks/${editingId}` : `${API_URL}/marks`;
                 const method = isEdit ? "PUT" : "POST";
 
+                // const response = await fetch(endpoint, {
+                //     method: method,
+                //     headers: {
+                //         "Content-Type": "application/json"
+                //     },
+                //     body: JSON.stringify(data)
+                // });
                 const response = await fetch(endpoint, {
                     method: method,
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify(data)
                 });
@@ -640,8 +658,12 @@ Exam Type: ${record.Exam_Type}`);
             if (!confirm(`Are you sure you want to delete Marks record #${id}?`)) return;
 
             try {
+                // const response = await fetch(`${API_URL}/marks/${id}`, {
+                //     method: "DELETE"
+                // });
                 const response = await fetch(`${API_URL}/marks/${id}`, {
-                    method: "DELETE"
+                    method: "DELETE",
+                    headers: authHeaders
                 });
 
                 if (!response.ok) throw new Error("Delete failed");
@@ -703,7 +725,8 @@ Exam Type: ${record.Exam_Type}`);
             <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
                 <br>
                 <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+                Ask me about study plans, attendance, exams, marks, or career guidance.
+            </p>
         </div>
 
         <div style="display: flex; gap: 5px;">
