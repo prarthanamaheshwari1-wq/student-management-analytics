@@ -307,17 +307,9 @@
     </main>
     <script>
         const API_BASE = "https://student-management-analytics.onrender.com";
-
         // ===================== AUTHENTICATION =====================
 
         const token = localStorage.getItem("token");
-
-        console.log("TOKEN:", token);
-        console.log("ROLE:", localStorage.getItem("role"));
-        console.log("USER:", localStorage.getItem("user"));
-
-        console.log("AUTH HEADERS:", authHeaders);
-
         const role = localStorage.getItem("role");
 
         const user =
@@ -327,6 +319,10 @@
             "Authorization": `Bearer ${token}`
         };
 
+        console.log("TOKEN:", token);
+        console.log("ROLE:", role);
+        console.log("USER:", user);
+        console.log("AUTH HEADERS:", authHeaders);
 
         // ===================== LOGOUT =====================
 

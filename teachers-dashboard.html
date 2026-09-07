@@ -513,55 +513,59 @@
 
             try {
 
-                const response =
-                    await fetch(
-                        `${API_URL}/dashboard`,
-                        {
-                            headers: authHeaders
-                        }
-                    );
+                const response = await fetch(
+                    `${API_URL}/dashboard`,
+                    {
+                        headers: authHeaders
+                    }
+                );
+
+                const data = await response.json();
+
+                console.log("Dashboard Status:", response.status);
+                console.log("Dashboard Data:", data);
 
 
                 if (!response.ok) {
 
                     throw new Error(
+                        data.error ||
+                        data.message ||
                         `HTTP Error: ${response.status}`
                     );
-
                 }
 
 
-                const data =
-                    await response.json();
-
-
-                console.log(
-                    "Dashboard Data:",
-                    data
-                );
-
-
+                // Total Students
                 document.getElementById(
                     "totalStudents"
                 ).textContent =
                     data.totalStudents ??
+                    data.TotalStudents ??
                     data.students ??
+                    data.Students ??
                     0;
 
 
+                // Total Teachers
                 document.getElementById(
                     "totalTeachers"
                 ).textContent =
                     data.totalTeachers ??
+                    data.TotalTeachers ??
                     data.teachers ??
+                    data.Teachers ??
                     0;
 
 
+                // Total Classes
                 document.getElementById(
                     "totalClasses"
                 ).textContent =
                     data.totalClasses ??
+                    data.TotalClasses ??
                     data.classes ??
+                    data.Classes ??
                     0;
 
 
@@ -590,7 +594,6 @@
             }
 
         }
-
 
 
         // =====================================================
