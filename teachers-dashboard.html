@@ -445,16 +445,28 @@
 
         // Check authentication state on page load
         document.addEventListener("DOMContentLoaded", function () {
-            const role = localStorage.getItem("role");
-            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            // const role = localStorage.getItem("role");
+            // const user = JSON.parse(localStorage.getItem("user") || "{}");
 
             // Redirect unauthenticated users back to login
-            if (!role || role.toLowerCase() !== "teacher") {
+            // if (!role || role.toLowerCase() !== "teacher") {
+            //     alert("Unauthorized access. Please log in as a teacher.");
+            //     window.location.href = "index.html";
+            //     return;
+            // }
+            const role = localStorage.getItem("role");
+            const token = localStorage.getItem("token");
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+            if (!token || !role || role.toLowerCase() !== "teacher") {
                 alert("Unauthorized access. Please log in as a teacher.");
+                localStorage.clear();
                 window.location.href = "index.html";
                 return;
             }
-
+            const authHeaders = {
+                "Authorization": `Bearer ${token}`
+            };
             // Populate header details safely
             const firstName = user.First_Name || user.Name || user.username || 'Teacher';
             const lastName = user.Last_Name || '';
@@ -610,7 +622,8 @@
             <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
                 <br>
                 <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+                Ask me about study plans, attendance, exams, marks, or career guidance.
+            </p>
         </div>
 
         <div style="display: flex; gap: 5px;">

@@ -598,6 +598,11 @@
     <script>
 
         const API_URL = "https://student-management-analytics.onrender.com";
+        const token = localStorage.getItem("token");
+
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
 
         // =====================================================
         // LOAD DASHBOARD SUMMARY
@@ -607,7 +612,10 @@
 
             try {
 
-                const response = await fetch(`${API_URL}/dashboard`);
+                // const response = await fetch(`${API_URL}/dashboard`);
+                const response = await fetch(`${API_URL}/dashboard`, {
+                    headers: authHeaders
+                });
 
                 if (!response.ok) {
                     throw new Error(`HTTP Error: ${response.status}`);
@@ -648,8 +656,12 @@
 
             try {
 
+                // const response =
+                //     await fetch(`${API_URL}/students-by-class`);
                 const response =
-                    await fetch(`${API_URL}/students-by-class`);
+                    await fetch(`${API_URL}/students-by-class`, {
+                    headers: authHeaders
+                });
 
                 if (!response.ok) {
                     throw new Error(`HTTP Error: ${response.status}`);
@@ -751,8 +763,12 @@
 
             try {
 
+                // const response =
+                //     await fetch(`${API_URL}/students-by-gender`);
                 const response =
-                    await fetch(`${API_URL}/students-by-gender`);
+                    await fetch(`${API_URL}/students-by-gender`, {
+                    headers: authHeaders
+                });
 
                 if (!response.ok) {
                     throw new Error(`HTTP Error: ${response.status}`);
@@ -842,6 +858,14 @@
         document.addEventListener("DOMContentLoaded", function () {
 
             console.log("Dashboard loaded.");
+            const role = localStorage.getItem("role");
+            const token = localStorage.getItem("token");
+            if (!token || !role || role.toLowerCase() !== "admin") {
+                alert("Unauthorized access. Please log in as an admin.");
+                localStorage.clear();
+                window.location.href = "index.html";
+                return;
+            }
 
             loadDashboard();
 

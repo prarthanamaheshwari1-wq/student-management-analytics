@@ -412,20 +412,22 @@
         // ==========================================
         // STUDENT ID
         // ==========================================
-
-        /*
-            Currently the Student ID is taken from
-            localStorage.
-
-            If it does not exist, Student ID 1
-            is used for testing.
-
-            Later the Student Login will automatically
-            store the correct Student ID.
-        */
-
+        // const studentId =
+        //     localStorage.getItem("studentId") || 1;
         const studentId =
-            localStorage.getItem("studentId") || 1;
+            localStorage.getItem("studentId");
+
+        const token =
+            localStorage.getItem("token");
+
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
+        if (!studentId || !token || localStorage.getItem("role") !== "student") {
+            alert("No active student session found. Please log in again.");
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
 
 
         // ==========================================
@@ -436,8 +438,14 @@
 
             try {
 
+                // const response = await fetch(
+                //     `${API_URL}/students/${studentId}`
+                // );
                 const response = await fetch(
-                    `${API_URL}/students/${studentId}`
+                    `${API_URL}/students/${studentId}`,
+                    {
+                        headers: authHeaders
+                    }
                 );
 
                 if (!response.ok) {
@@ -478,8 +486,14 @@
 
             try {
 
+                // const response = await fetch(
+                //     `${API_URL}/students/${studentId}/marks`
+                // );
                 const response = await fetch(
-                    `${API_URL}/students/${studentId}/marks`
+                    `${API_URL}/students/${studentId}/marks`,
+                    {
+                        headers: authHeaders
+                    }
                 );
 
                 if (!response.ok) {
@@ -653,7 +667,7 @@
         loadMarks();
 
     </script>
-<!-- Floating AI Button -->
+    <!-- Floating AI Button -->
     <button id="ai-btn" onclick="toggleAIChat()"
         style="position: fixed; bottom: 20px; right: 20px; background-color: #4285F4; color: white; border: none; padding: 12px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">
         🤖 Ask AI Tutor
@@ -673,7 +687,8 @@
             <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
                 <br>
                 <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+                Ask me about study plans, attendance, exams, marks, or career guidance.
+            </p>
         </div>
 
         <div style="display: flex; gap: 5px;">

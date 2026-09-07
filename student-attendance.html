@@ -8,7 +8,6 @@
     <title>Attendance - Student Management System</title>
 
     <style>
-
         * {
             margin: 0;
             padding: 0;
@@ -258,7 +257,6 @@
             }
 
         }
-
     </style>
 
 </head>
@@ -315,9 +313,7 @@
 
             <h1>My Attendance</h1>
 
-            <button
-                class="logout-btn"
-                onclick="logout()">
+            <button class="logout-btn" onclick="logout()">
 
                 Logout
 
@@ -358,9 +354,7 @@
                     Total Working Days
                 </h3>
 
-                <div
-                    class="value"
-                    id="totalWorkingDays">
+                <div class="value" id="totalWorkingDays">
 
                     -
 
@@ -377,9 +371,7 @@
                     Days Present
                 </h3>
 
-                <div
-                    class="value"
-                    id="daysPresent">
+                <div class="value" id="daysPresent">
 
                     -
 
@@ -396,9 +388,7 @@
                     Days Absent
                 </h3>
 
-                <div
-                    class="value"
-                    id="daysAbsent">
+                <div class="value" id="daysAbsent">
 
                     -
 
@@ -415,9 +405,7 @@
                     Attendance Percentage
                 </h3>
 
-                <div
-                    class="value"
-                    id="attendancePercentage">
+                <div class="value" id="attendancePercentage">
 
                     -
 
@@ -441,26 +429,20 @@
 
             <div class="progress-container">
 
-                <div
-                    class="progress-bar"
-                    id="progressBar">
+                <div class="progress-bar" id="progressBar">
                 </div>
 
             </div>
 
 
-            <div
-                class="percentage"
-                id="percentageText">
+            <div class="percentage" id="percentageText">
 
                 Attendance: -
 
             </div>
 
 
-            <div
-                class="message"
-                id="attendanceMessage">
+            <div class="message" id="attendanceMessage">
 
                 Loading attendance status...
 
@@ -488,6 +470,11 @@
 
         const API_URL =
             "https://student-management-analytics.onrender.com";
+        const token = localStorage.getItem("token");
+
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
 
 
         // ==========================================
@@ -495,8 +482,13 @@
         // ==========================================
 
         const studentId =
-            localStorage.getItem("studentId") || 1;
-
+            // localStorage.getItem("studentId") || 1;
+            localStorage.getItem("studentId");
+        if (!studentId || !token || localStorage.getItem("role") !== "student") {
+            alert("No active student session found. Please log in again.");
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
 
         console.log(
             "Student ID:",
@@ -512,9 +504,16 @@
 
             try {
 
+                // const response =
+                //     await fetch(
+                //         `${API_URL}/students/${studentId}`
+                //     );
                 const response =
                     await fetch(
-                        `${API_URL}/students/${studentId}`
+                        `${API_URL}/students/${studentId}`,
+                        {
+                            headers: authHeaders
+                        }
                     );
 
 
@@ -585,9 +584,16 @@
 
             try {
 
+                // const response =
+                //     await fetch(
+                //         `${API_URL}/attendance/metrics?student_id=${studentId}`
+                //     );
                 const response =
                     await fetch(
-                        `${API_URL}/attendance/metrics?student_id=${studentId}`
+                        `${API_URL}/attendance/metrics?student_id=${studentId}`,
+                        {
+                            headers: authHeaders
+                        }
                     );
 
 
@@ -882,7 +888,8 @@
             <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
                 <br>
                 <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+                Ask me about study plans, attendance, exams, marks, or career guidance.
+            </p>
         </div>
 
         <div style="display: flex; gap: 5px;">

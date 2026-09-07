@@ -238,13 +238,18 @@
 
         // Safely retrieve user data saved by index.html login script
         const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const token = localStorage.getItem("token");
 
         // Robust fallback chain: explicit storage -> capitalized DB field -> lowercase DB field
         const studentId = localStorage.getItem("studentId") || storedUser.Student_id || storedUser.student_id;
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
 
         async function loadStudentProfile() {
             // 1. If no student is logged in, redirect to login page immediately
-            if (!studentId || studentId === "undefined" || studentId === "null") {
+            // if (!studentId || studentId === "undefined" || studentId === "null") {
+            if (!studentId || !token || studentId === "undefined" || studentId === "null") {
                 alert("No active session found. Please log in.");
                 window.location.href = "index.html";
                 return;
@@ -252,7 +257,10 @@
 
             try {
                 // Fetch the logged-in student's exact endpoint
-                const response = await fetch(`${API_URL}/students/${studentId}`);
+                // const response = await fetch(`${API_URL}/students/${studentId}`);
+                const response = await fetch(`${API_URL}/students/${studentId}`, {
+                    headers: authHeaders
+                });
 
                 if (!response.ok) {
                     throw new Error(`Student ID #${studentId} not found in database.`);
@@ -321,7 +329,7 @@
 
         loadStudentProfile();
     </script>
-<!-- Floating AI Button -->
+    <!-- Floating AI Button -->
     <button id="ai-btn" onclick="toggleAIChat()"
         style="position: fixed; bottom: 20px; right: 20px; background-color: #4285F4; color: white; border: none; padding: 12px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">
         🤖 Ask AI Tutor
@@ -341,7 +349,8 @@
             <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
                 <br>
                 <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+                Ask me about study plans, attendance, exams, marks, or career guidance.
+            </p>
         </div>
 
         <div style="display: flex; gap: 5px;">
