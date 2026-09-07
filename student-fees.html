@@ -10,7 +10,6 @@
     <title>Fees - Student Management System</title>
 
     <style>
-
         * {
             margin: 0;
             padding: 0;
@@ -276,7 +275,6 @@
             }
 
         }
-
     </style>
 
 </head>
@@ -333,9 +331,7 @@
 
             <h1>My Fees</h1>
 
-            <button
-                class="logout-btn"
-                onclick="logout()">
+            <button class="logout-btn" onclick="logout()">
 
                 Logout
 
@@ -376,9 +372,7 @@
                     Total Fee
                 </h3>
 
-                <div
-                    class="value"
-                    id="totalFee">
+                <div class="value" id="totalFee">
 
                     ₹0
 
@@ -395,9 +389,7 @@
                     Paid Fee
                 </h3>
 
-                <div
-                    class="value"
-                    id="paidFee">
+                <div class="value" id="paidFee">
 
                     ₹0
 
@@ -414,9 +406,7 @@
                     Pending Fee
                 </h3>
 
-                <div
-                    class="value"
-                    id="pendingFee">
+                <div class="value" id="pendingFee">
 
                     ₹0
 
@@ -478,9 +468,7 @@
 
                         <tr>
 
-                            <td
-                                colspan="6"
-                                class="loading">
+                            <td colspan="6" class="loading">
 
                                 Loading fee records...
 
@@ -514,6 +502,17 @@
 
         const studentId =
             localStorage.getItem("studentId") || "1";
+        const token = localStorage.getItem("token");
+
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
+
+        if (!studentId || !token || localStorage.getItem("role") !== "student") {
+            alert("No active student session found. Please log in again.");
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
 
         console.log("=================================");
         console.log("CURRENT STUDENT ID:", studentId);
@@ -528,9 +527,16 @@
 
             try {
 
+                // const response =
+                //     await fetch(
+                //         `${API_URL}/students/${studentId}`
+                //     );
                 const response =
                     await fetch(
-                        `${API_URL}/students/${studentId}`
+                        `${API_URL}/students/${studentId}`,
+                        {
+                            headers: authHeaders
+                        }
                     );
 
 
@@ -618,9 +624,16 @@
                 );
 
 
+                // const response =
+                //     await fetch(
+                //         `${API_URL}/fees`
+                //     );
                 const response =
                     await fetch(
-                        `${API_URL}/fees`
+                        `${API_URL}/fees`,
+                        {
+                            headers: authHeaders
+                        }
                     );
 
 
@@ -1122,7 +1135,8 @@
             <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
                 <br>
                 <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+                Ask me about study plans, attendance, exams, marks, or career guidance.
+            </p>
         </div>
 
         <div style="display: flex; gap: 5px;">
