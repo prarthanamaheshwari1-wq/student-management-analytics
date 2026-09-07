@@ -2015,7 +2015,7 @@ app.put("/fees/:id", auth(["admin"]), async (req, res) => {
 // DASHBOARD
 // ======================================================
 
-app.get("/dashboard", auth(["admin"]), async (req, res) => {
+app.get("/dashboard", auth(["admin","teacher"]), async (req, res) => {
 
     try {
 
