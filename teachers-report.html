@@ -305,142 +305,440 @@
 
         </section>
     </main>
-
     <script>
-        const API_BASE = "https://student-management-analytics.onrender.com";   // Change if your backend runs on different port
+        const API_BASE = "https://student-management-analytics.onrender.com";
+
+        // ===================== AUTHENTICATION =====================
+
+        const token = localStorage.getItem("token");
+
+        const role = localStorage.getItem("role");
+
+        const user =
+            JSON.parse(localStorage.getItem("user") || "{}");
+
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
+
+
+        // ===================== LOGOUT =====================
+
+        function logout() {
+
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            localStorage.removeItem("user");
+
+        }
+
 
         // ===================== SUMMARY CARDS =====================
+
         async function loadSummary() {
+
             try {
-                const res = await fetch(`${API_BASE}/reports/summary`);
+
+                const res = await fetch(
+                    `${API_BASE}/reports/summary`,
+                    {
+                        headers: authHeaders
+                    }
+                );
+
                 const data = await res.json();
 
-                document.getElementById("totalStudents").textContent = data.TotalStudents || 0;
-                document.getElementById("totalTeachers").textContent = data.TotalTeachers || 0;
-                document.getElementById("totalAttendance").textContent = data.TotalAttendanceRecords || 0;
-                document.getElementById("totalPaidFees").textContent = "₹" + (data.TotalPaidFees || 0).toLocaleString();
+                if (!res.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        data.message ||
+                        "Unable to load summary"
+                    );
+                }
+
+                document.getElementById("totalStudents").textContent =
+                    data.TotalStudents || 0;
+
+                document.getElementById("totalTeachers").textContent =
+                    data.TotalTeachers || 0;
+
+                document.getElementById("totalAttendance").textContent =
+                    data.TotalAttendanceRecords || 0;
+
+                document.getElementById("totalPaidFees").textContent =
+                    "₹" +
+                    (data.TotalPaidFees || 0).toLocaleString();
+
             } catch (err) {
+
                 console.error("Summary Error:", err);
+
             }
         }
 
+
         // ===================== TOP STUDENTS =====================
+
         async function loadTopStudents() {
+
             try {
-                const res = await fetch(`${API_BASE}/reports/academic`);
+
+                const res = await fetch(
+                    `${API_BASE}/reports/academic`,
+                    {
+                        headers: authHeaders
+                    }
+                );
+
                 const data = await res.json();
 
-                // Sort by marks descending and take top 5
+                if (!res.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        data.message ||
+                        "Unable to load academic report"
+                    );
+                }
+
+                // Sort by marks descending
+                // and take top 5
+
                 const top = data
                     .sort((a, b) => b.Marks - a.Marks)
                     .slice(0, 5);
 
-                const tbody = document.getElementById("topStudentsBody");
+
+                const tbody =
+                    document.getElementById(
+                        "topStudentsBody"
+                    );
+
                 tbody.innerHTML = "";
 
-                top.forEach(student => {
-                    const row = `
+
+                if (top.length === 0) {
+
+                    tbody.innerHTML = `
                     <tr>
-                        <td>${student.Student_Name}</td>
-                        <td>${student.Class} - ${student.Section}</td>
-                        <td>${student.Subject}</td>
-                        <td><strong>${student.Marks}</strong></td>
-                        <td>${student.Exam_Type}</td>
+                        <td colspan="5" style="text-align:center;">
+                            No academic records found
+                        </td>
                     </tr>
                 `;
-                    tbody.innerHTML += row;
-                });
 
-                document.getElementById("topStudentsLoading").style.display = "none";
-                document.getElementById("topStudentsTable").style.display = "table";
+                } else {
+
+                    top.forEach(student => {
+
+                        const row = `
+                        <tr>
+                            <td>
+                                ${student.Student_Name}
+                            </td>
+
+                            <td>
+                                ${student.Class} -
+                                ${student.Section}
+                            </td>
+
+                            <td>
+                                ${student.Subject}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    ${student.Marks}
+                                </strong>
+                            </td>
+
+                            <td>
+                                ${student.Exam_Type}
+                            </td>
+                        </tr>
+                    `;
+
+                        tbody.innerHTML += row;
+
+                    });
+                }
+
+
+                document.getElementById(
+                    "topStudentsLoading"
+                ).style.display = "none";
+
+
+                document.getElementById(
+                    "topStudentsTable"
+                ).style.display = "table";
+
 
             } catch (err) {
-                console.error("Top Students Error:", err);
-                document.getElementById("topStudentsLoading").textContent = "Failed to load data";
+
+                console.error(
+                    "Top Students Error:",
+                    err
+                );
+
+                document.getElementById(
+                    "topStudentsLoading"
+                ).textContent =
+                    "Failed to load data";
             }
         }
+
 
         // ===================== PENDING FEES =====================
+
         async function loadPendingFees() {
+
             try {
-                const res = await fetch(`${API_BASE}/reports/fees`);
+
+                const res = await fetch(
+                    `${API_BASE}/reports/fees`,
+                    {
+                        headers: authHeaders
+                    }
+                );
+
                 const data = await res.json();
 
-                // Only students who have pending fee > 0
-                const pending = data.filter(item => item.Pending_Fee > 0);
+                if (!res.ok) {
 
-                const tbody = document.getElementById("pendingFeesBody");
+                    throw new Error(
+                        data.error ||
+                        data.message ||
+                        "Unable to load fees report"
+                    );
+                }
+
+
+                // Only students with pending fee > 0
+
+                const pending = data.filter(
+                    item => item.Pending_Fee > 0
+                );
+
+
+                const tbody =
+                    document.getElementById(
+                        "pendingFeesBody"
+                    );
+
                 tbody.innerHTML = "";
+
 
                 if (pending.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No pending fees 🎉</td></tr>`;
+
+                    tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5"
+                            style="text-align:center;">
+                            No pending fees 🎉
+                        </td>
+                    </tr>
+                `;
+
                 } else {
+
                     pending.forEach(student => {
+
                         const row = `
                         <tr>
-                            <td>${student.Student_Name}</td>
-                            <td>${student.Class} - ${student.Section}</td>
-                            <td>₹${student.Total_Fee}</td>
-                            <td>₹${student.Paid_Fee}</td>
-                            <td style="color:#dc2626; font-weight:bold;">₹${student.Pending_Fee}</td>
+
+                            <td>
+                                ${student.Student_Name}
+                            </td>
+
+                            <td>
+                                ${student.Class} -
+                                ${student.Section}
+                            </td>
+
+                            <td>
+                                ₹${student.Total_Fee}
+                            </td>
+
+                            <td>
+                                ₹${student.Paid_Fee}
+                            </td>
+
+                            <td style="
+                                color:#dc2626;
+                                font-weight:bold;
+                            ">
+                                ₹${student.Pending_Fee}
+                            </td>
+
                         </tr>
                     `;
+
                         tbody.innerHTML += row;
+
                     });
                 }
 
-                document.getElementById("pendingFeesLoading").style.display = "none";
-                document.getElementById("pendingFeesTable").style.display = "table";
+
+                document.getElementById(
+                    "pendingFeesLoading"
+                ).style.display = "none";
+
+
+                document.getElementById(
+                    "pendingFeesTable"
+                ).style.display = "table";
+
 
             } catch (err) {
-                console.error("Pending Fees Error:", err);
-                document.getElementById("pendingFeesLoading").textContent = "Failed to load data";
+
+                console.error(
+                    "Pending Fees Error:",
+                    err
+                );
+
+                document.getElementById(
+                    "pendingFeesLoading"
+                ).textContent =
+                    "Failed to load data";
             }
         }
+
 
         // ===================== LOW ATTENDANCE =====================
+
         async function loadLowAttendance() {
+
             try {
-                const res = await fetch(`${API_BASE}/reports/low-attendance`);
+
+                const res = await fetch(
+                    `${API_BASE}/reports/low-attendance`,
+                    {
+                        headers: authHeaders
+                    }
+                );
+
                 const data = await res.json();
 
-                const tbody = document.getElementById("lowAttendanceBody");
+                if (!res.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        data.message ||
+                        "Unable to load attendance report"
+                    );
+                }
+
+
+                const tbody =
+                    document.getElementById(
+                        "lowAttendanceBody"
+                    );
+
                 tbody.innerHTML = "";
 
+
                 if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No students with low attendance 🎉</td></tr>`;
+
+                    tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5"
+                            style="text-align:center;">
+                            No students with low attendance 🎉
+                        </td>
+                    </tr>
+                `;
+
                 } else {
+
                     data.forEach(student => {
+
                         const row = `
                         <tr>
-                            <td>${student.Student_Name}</td>
-                            <td>${student.Class} - ${student.Section}</td>
-                            <td>${student.Present_Days}</td>
-                            <td>${student.Total_Days}</td>
-                            <td style="color:#dc2626; font-weight:bold;">${student.Attendance_Percentage}%</td>
+
+                            <td>
+                                ${student.Student_Name}
+                            </td>
+
+                            <td>
+                                ${student.Class} -
+                                ${student.Section}
+                            </td>
+
+                            <td>
+                                ${student.Present_Days}
+                            </td>
+
+                            <td>
+                                ${student.Total_Days}
+                            </td>
+
+                            <td style="
+                                color:#dc2626;
+                                font-weight:bold;
+                            ">
+                                ${student.Attendance_Percentage}%
+                            </td>
+
                         </tr>
                     `;
+
                         tbody.innerHTML += row;
+
                     });
                 }
 
-                document.getElementById("lowAttendanceLoading").style.display = "none";
-                document.getElementById("lowAttendanceTable").style.display = "table";
+
+                document.getElementById(
+                    "lowAttendanceLoading"
+                ).style.display = "none";
+
+
+                document.getElementById(
+                    "lowAttendanceTable"
+                ).style.display = "table";
+
 
             } catch (err) {
-                console.error("Low Attendance Error:", err);
-                document.getElementById("lowAttendanceLoading").textContent = "Failed to load data";
+
+                console.error(
+                    "Low Attendance Error:",
+                    err
+                );
+
+                document.getElementById(
+                    "lowAttendanceLoading"
+                ).textContent =
+                    "Failed to load data";
             }
         }
+
+
+        // ===================== ATTENDANCE REPORT =====================
+
         async function loadAttendanceReport() {
 
             try {
 
                 const res = await fetch(
-                    `${API_BASE}/reports/attendance`
+                    `${API_BASE}/reports/attendance`,
+                    {
+                        headers: authHeaders
+                    }
                 );
 
                 const data = await res.json();
+
+                if (!res.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        data.message ||
+                        "Unable to load attendance report"
+                    );
+                }
+
 
                 const tbody =
                     document.getElementById(
@@ -449,29 +747,62 @@
 
                 tbody.innerHTML = "";
 
-                data.forEach(student => {
 
-                    tbody.innerHTML += `
-                <tr>
-                    <td>${student.Student_Name}</td>
-                    <td>${student.Class} - ${student.Section}</td>
-                    <td>${student.Present_Days}</td>
-                    <td>${student.Absent_Days}</td>
-                    <td>
-                        ${student.Attendance_Percentage || 0}%
-                    </td>
-                </tr>
-            `;
+                if (data.length === 0) {
 
-                });
+                    tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5"
+                            style="text-align:center;">
+                            No attendance records found
+                        </td>
+                    </tr>
+                `;
+
+                } else {
+
+                    data.forEach(student => {
+
+                        tbody.innerHTML += `
+                        <tr>
+
+                            <td>
+                                ${student.Student_Name}
+                            </td>
+
+                            <td>
+                                ${student.Class} -
+                                ${student.Section}
+                            </td>
+
+                            <td>
+                                ${student.Present_Days}
+                            </td>
+
+                            <td>
+                                ${student.Absent_Days}
+                            </td>
+
+                            <td>
+                                ${student.Attendance_Percentage || 0}%
+                            </td>
+
+                        </tr>
+                    `;
+
+                    });
+                }
+
 
                 document.getElementById(
                     "attendanceReportLoading"
                 ).style.display = "none";
 
+
                 document.getElementById(
                     "attendanceReportTable"
                 ).style.display = "table";
+
 
             } catch (err) {
 
@@ -486,15 +817,32 @@
                     "Failed to load data";
             }
         }
+
+
+        // ===================== SUBJECT PERFORMANCE =====================
+
         async function loadSubjectPerformance() {
 
             try {
 
                 const res = await fetch(
-                    `${API_BASE}/reports/subject-performance`
+                    `${API_BASE}/reports/subject-performance`,
+                    {
+                        headers: authHeaders
+                    }
                 );
 
                 const data = await res.json();
+
+                if (!res.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        data.message ||
+                        "Unable to load subject performance"
+                    );
+                }
+
 
                 const tbody =
                     document.getElementById(
@@ -503,27 +851,61 @@
 
                 tbody.innerHTML = "";
 
-                data.forEach(subject => {
 
-                    tbody.innerHTML += `
-                <tr>
-                    <td>${subject.Subject}</td>
-                    <td>${subject.Number_of_Students}</td>
-                    <td>${subject.Average_Marks}</td>
-                    <td>${subject.Highest_Marks}</td>
-                    <td>${subject.Lowest_Marks}</td>
-                </tr>
-            `;
+                if (data.length === 0) {
 
-                });
+                    tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5"
+                            style="text-align:center;">
+                            No subject performance records found
+                        </td>
+                    </tr>
+                `;
+
+                } else {
+
+                    data.forEach(subject => {
+
+                        tbody.innerHTML += `
+                        <tr>
+
+                            <td>
+                                ${subject.Subject}
+                            </td>
+
+                            <td>
+                                ${subject.Number_of_Students}
+                            </td>
+
+                            <td>
+                                ${subject.Average_Marks}
+                            </td>
+
+                            <td>
+                                ${subject.Highest_Marks}
+                            </td>
+
+                            <td>
+                                ${subject.Lowest_Marks}
+                            </td>
+
+                        </tr>
+                    `;
+
+                    });
+                }
+
 
                 document.getElementById(
                     "subjectPerformanceLoading"
                 ).style.display = "none";
 
+
                 document.getElementById(
                     "subjectPerformanceTable"
                 ).style.display = "table";
+
 
             } catch (err) {
 
@@ -539,8 +921,24 @@
             }
         }
 
-        // Load everything when page opens
+
+        // ===================== LOAD EVERYTHING =====================
+
         window.onload = () => {
+
+            // Check whether token exists
+
+            if (!token) {
+
+                console.error(
+                    "No authentication token found."
+                );
+
+                window.location.href = "index.html";
+
+                return;
+            }
+
 
             loadSummary();
 
@@ -553,7 +951,9 @@
             loadAttendanceReport();
 
             loadSubjectPerformance();
+
         };
+
     </script>
     <!-- Floating AI Button -->
     <button id="ai-btn" onclick="toggleAIChat()"
@@ -575,7 +975,8 @@
             <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
                 <br>
                 <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+                Ask me about study plans, attendance, exams, marks, or career guidance.
+            </p>
         </div>
 
         <div style="display: flex; gap: 5px;">

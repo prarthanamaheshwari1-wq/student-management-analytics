@@ -484,81 +484,218 @@
     <!-- JAVASCRIPT -->
     <script>
         const API_URL = "https://student-management-analytics.onrender.com";
+
+        const token = localStorage.getItem("token");
+
+        const currentUserRole =
+            localStorage.getItem("role") || "admin";
+
+        const user =
+            JSON.parse(localStorage.getItem("user") || "{}");
+
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
+
         let marksCache = [];
         let editingId = null;
 
+
+        // ==========================================
         // LOAD MARKS
+        // ==========================================
+
         async function loadMarks() {
-            const body = document.getElementById("marksTable");
+
+            const body =
+                document.getElementById("marksTable");
+
 
             try {
-                body.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="message">Loading marks data...</td>
-                    </tr>
-                `;
 
-                const response = await fetch(`${API_URL}/marks`);
+                body.innerHTML = `
+            <tr>
+                <td colspan="7" class="message">
+                    Loading marks data...
+                </td>
+            </tr>
+        `;
+
+
+                const response =
+                    await fetch(
+                        `${API_URL}/marks`,
+                        {
+                            headers: authHeaders
+                        }
+                    );
+
 
                 if (!response.ok) {
-                    throw new Error(`HTTP Error: ${response.status}`);
+
+                    throw new Error(
+                        `HTTP Error: ${response.status}`
+                    );
+
                 }
 
-                const data = await response.json();
+
+                const data =
+                    await response.json();
+
+
                 marksCache = data;
+
 
                 renderTable(data);
 
+
             } catch (error) {
-                console.error("Marks Error:", error);
+
+                console.error(
+                    "Marks Error:",
+                    error
+                );
+
+
                 body.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="message" style="color: #dc2626;">
-                            Failed to load marks data. Please check backend connection.
-                        </td>
-                    </tr>
-                `;
+            <tr>
+                <td
+                    colspan="7"
+                    class="message"
+                    style="color: #dc2626;"
+                >
+                    Failed to load marks data.
+                    Please check backend connection.
+                </td>
+            </tr>
+        `;
+
             }
+
         }
 
-        // RENDER TABLE ROWS WITH ACTION HANDLERS
-        function renderTable(data) {
-            const body = document.getElementById("marksTable");
 
-            if (!Array.isArray(data) || data.length === 0) {
+        // ==========================================
+        // RENDER TABLE ROWS
+        // ==========================================
+
+        function renderTable(data) {
+
+            const body =
+                document.getElementById("marksTable");
+
+
+            if (
+                !Array.isArray(data) ||
+                data.length === 0
+            ) {
+
                 body.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="message">No marks records found.</td>
-                    </tr>
-                `;
+            <tr>
+                <td
+                    colspan="7"
+                    class="message"
+                >
+                    No marks records found.
+                </td>
+            </tr>
+        `;
+
                 return;
+
             }
+
 
             body.innerHTML = "";
+
+
             data.forEach(record => {
-                const id = record.Marks_id;
+
+                const id =
+                    record.Marks_id;
+
+
                 body.innerHTML += `
-                    <tr>
-                        <td>${record.Marks_id ?? 'N/A'}</td>
-                        <td>${record.Student_id ?? 'N/A'}</td>
-                        <td>${record.Teacher_id ?? 'N/A'}</td>
-                        <td>${record.Subject ?? 'N/A'}</td>
-                        <td>${record.Marks ?? 'N/A'}</td>
-                        <td>${record.Exam_Type ?? 'N/A'}</td>
-                        <td>
-                            <button class="action-button view-button" onclick="viewMarks(${id})">👁 View</button>
-                            <button class="action-button edit-button" onclick="openEditModal(${id})">✏️ Edit</button>
-                            <button class="action-button delete-button" onclick="deleteMarks(${id})">🗑️ Delete</button>
-                        </td>
-                    </tr>
-                `;
+            <tr>
+
+                <td>
+                    ${record.Marks_id ?? 'N/A'}
+                </td>
+
+                <td>
+                    ${record.Student_id ?? 'N/A'}
+                </td>
+
+                <td>
+                    ${record.Teacher_id ?? 'N/A'}
+                </td>
+
+                <td>
+                    ${record.Subject ?? 'N/A'}
+                </td>
+
+                <td>
+                    ${record.Marks ?? 'N/A'}
+                </td>
+
+                <td>
+                    ${record.Exam_Type ?? 'N/A'}
+                </td>
+
+                <td>
+
+                    <button
+                        class="action-button view-button"
+                        onclick="viewMarks(${id})"
+                    >
+                        👁 View
+                    </button>
+
+                    <button
+                        class="action-button edit-button"
+                        onclick="openEditModal(${id})"
+                    >
+                        ✏️ Edit
+                    </button>
+
+                    <button
+                        class="action-button delete-button"
+                        onclick="deleteMarks(${id})"
+                    >
+                        🗑️ Delete
+                    </button>
+
+                </td>
+
+            </tr>
+        `;
+
             });
+
         }
 
+
+        // ==========================================
         // VIEW MARKS
+        // ==========================================
+
         function viewMarks(id) {
-            const record = marksCache.find(r => r.Marks_id === id);
-            if (!record) return alert("Record not found.");
+
+            const record =
+                marksCache.find(
+                    r => r.Marks_id === id
+                );
+
+
+            if (!record) {
+
+                return alert(
+                    "Record not found."
+                );
+
+            }
+
 
             alert(`Marks Record Details:
 ------------------------
@@ -568,107 +705,401 @@ Teacher ID: ${record.Teacher_id}
 Subject: ${record.Subject}
 Marks: ${record.Marks}
 Exam Type: ${record.Exam_Type}`);
+
         }
 
+
+        // ==========================================
         // EDIT MARKS SETUP
+        // ==========================================
+
         function openEditModal(id) {
-            const record = marksCache.find(r => r.Marks_id === id);
-            if (!record) return alert("Record not found.");
+
+            const record =
+                marksCache.find(
+                    r => r.Marks_id === id
+                );
+
+
+            if (!record) {
+
+                return alert(
+                    "Record not found."
+                );
+
+            }
+
 
             editingId = id;
-            document.getElementById("studentId").value = record.Student_id ?? '';
-            document.getElementById("teacherId").value = record.Teacher_id ?? '';
-            document.getElementById("subject").value = record.Subject ?? '';
-            document.getElementById("marks").value = record.Marks ?? '';
-            document.getElementById("examType").value = record.Exam_Type ?? '';
 
-            document.querySelector("#addModal h2").textContent = "Edit Marks Record";
+
+            document.getElementById(
+                "studentId"
+            ).value =
+                record.Student_id ?? '';
+
+
+            document.getElementById(
+                "teacherId"
+            ).value =
+                record.Teacher_id ?? '';
+
+
+            document.getElementById(
+                "subject"
+            ).value =
+                record.Subject ?? '';
+
+
+            document.getElementById(
+                "marks"
+            ).value =
+                record.Marks ?? '';
+
+
+            document.getElementById(
+                "examType"
+            ).value =
+                record.Exam_Type ?? '';
+
+
+            document.querySelector(
+                "#addModal h2"
+            ).textContent =
+                "Edit Marks Record";
+
+
             openAddModal();
+
         }
 
-        // ADD OR EDIT MARKS SAVE HANDLER
+
+        // ==========================================
+        // ADD OR EDIT MARKS
+        // ==========================================
+
         async function addMarks() {
+
             try {
+
                 const data = {
-                    Student_id: parseInt(document.getElementById("studentId").value),
-                    Teacher_id: parseInt(document.getElementById("teacherId").value),
-                    Subject: document.getElementById("subject").value,
-                    Marks: parseInt(document.getElementById("marks").value),
-                    Exam_Type: document.getElementById("examType").value
+
+                    Student_id:
+                        parseInt(
+                            document.getElementById(
+                                "studentId"
+                            ).value
+                        ),
+
+                    Teacher_id:
+                        parseInt(
+                            document.getElementById(
+                                "teacherId"
+                            ).value
+                        ),
+
+                    Subject:
+                        document.getElementById(
+                            "subject"
+                        ).value,
+
+                    Marks:
+                        parseInt(
+                            document.getElementById(
+                                "marks"
+                            ).value
+                        ),
+
+                    Exam_Type:
+                        document.getElementById(
+                            "examType"
+                        ).value
+
                 };
 
-                const isEdit = editingId !== null;
-                const endpoint = isEdit ? `${API_URL}/marks/${editingId}` : `${API_URL}/marks`;
-                const method = isEdit ? "PUT" : "POST";
 
-                const response = await fetch(endpoint, {
-                    method: method,
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(data)
-                });
+                const isEdit =
+                    editingId !== null;
 
-                if (!response.ok) throw new Error("Request failed");
 
-                const result = await response.json();
-                alert(result.message || (isEdit ? "Record updated successfully" : "Record added successfully"));
+                const endpoint =
+                    isEdit
+                        ? `${API_URL}/marks/${editingId}`
+                        : `${API_URL}/marks`;
+
+
+                const method =
+                    isEdit
+                        ? "PUT"
+                        : "POST";
+
+
+                const response =
+                    await fetch(
+                        endpoint,
+                        {
+                            method: method,
+
+                            headers: {
+                                ...authHeaders,
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(data)
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                console.log(
+                    "Marks backend response:",
+                    result
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.error ||
+                        result.details ||
+                        "Request failed"
+                    );
+
+                }
+
+
+                alert(
+                    result.message ||
+                    (
+                        isEdit
+                            ? "Record updated successfully"
+                            : "Record added successfully"
+                    )
+                );
+
+
                 closeAddModal();
+
+
                 loadMarks();
 
+
             } catch (error) {
-                console.error("Save Error:", error);
-                alert("Unable to save record");
+
+                console.error(
+                    "Save Error:",
+                    error
+                );
+
+
+                alert(
+                    "Unable to save record:\n" +
+                    error.message
+                );
+
             }
+
         }
 
+
+        // ==========================================
         // DELETE MARKS
+        // ==========================================
+
         async function deleteMarks(id) {
-            if (!confirm(`Are you sure you want to delete Marks record #${id}?`)) return;
+
+            if (
+                !confirm(
+                    `Are you sure you want to delete Marks record #${id}?`
+                )
+            ) {
+
+                return;
+
+            }
+
 
             try {
-                const response = await fetch(`${API_URL}/marks/${id}`, {
-                    method: "DELETE"
-                });
 
-                if (!response.ok) throw new Error("Delete failed");
+                const response =
+                    await fetch(
+                        `${API_URL}/marks/${id}`,
+                        {
+                            method: "DELETE",
 
-                const result = await response.json();
-                alert(result.message || "Record deleted successfully");
+                            headers: authHeaders
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                console.log(
+                    "Delete backend response:",
+                    result
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.error ||
+                        result.details ||
+                        "Delete failed"
+                    );
+
+                }
+
+
+                alert(
+                    result.message ||
+                    "Record deleted successfully"
+                );
+
+
                 loadMarks();
+
+
             } catch (error) {
-                console.error("Delete Error:", error);
-                alert("Unable to delete record");
+
+                console.error(
+                    "Delete Error:",
+                    error
+                );
+
+
+                alert(
+                    "Unable to delete record:\n" +
+                    error.message
+                );
+
             }
+
         }
 
+
+        // ==========================================
         // FILTER MARKS
+        // ==========================================
+
         function filterMarks() {
-            const query = document.getElementById("searchInput").value.toLowerCase();
-            const filtered = marksCache.filter(record =>
-                String(record.Marks_id ?? '').toLowerCase().includes(query) ||
-                String(record.Student_id ?? '').toLowerCase().includes(query) ||
-                String(record.Teacher_id ?? '').toLowerCase().includes(query) ||
-                String(record.Subject ?? '').toLowerCase().includes(query) ||
-                String(record.Marks ?? '').toLowerCase().includes(query) ||
-                String(record.Exam_Type ?? '').toLowerCase().includes(query)
-            );
+
+            const query =
+                document.getElementById(
+                    "searchInput"
+                ).value.toLowerCase();
+
+
+            const filtered =
+                marksCache.filter(
+                    record =>
+
+                        String(
+                            record.Marks_id ?? ''
+                        )
+                            .toLowerCase()
+                            .includes(query)
+
+                        ||
+
+                        String(
+                            record.Student_id ?? ''
+                        )
+                            .toLowerCase()
+                            .includes(query)
+
+                        ||
+
+                        String(
+                            record.Teacher_id ?? ''
+                        )
+                            .toLowerCase()
+                            .includes(query)
+
+                        ||
+
+                        String(
+                            record.Subject ?? ''
+                        )
+                            .toLowerCase()
+                            .includes(query)
+
+                        ||
+
+                        String(
+                            record.Marks ?? ''
+                        )
+                            .toLowerCase()
+                            .includes(query)
+
+                        ||
+
+                        String(
+                            record.Exam_Type ?? ''
+                        )
+                            .toLowerCase()
+                            .includes(query)
+
+                );
+
+
             renderTable(filtered);
+
         }
 
+
+        // ==========================================
         // MODAL CONTROLS
+        // ==========================================
+
         function openAddModal() {
-            document.getElementById("addModal").style.display = "flex";
+
+            document.getElementById(
+                "addModal"
+            ).style.display = "flex";
+
         }
+
 
         function closeAddModal() {
+
             editingId = null;
-            document.querySelector("#addModal h2").textContent = "Add Marks Record";
-            document.getElementById("addModal").style.display = "none";
-            document.getElementById("addMarksForm").reset();
+
+
+            document.querySelector(
+                "#addModal h2"
+            ).textContent =
+                "Add Marks Record";
+
+
+            document.getElementById(
+                "addModal"
+            ).style.display =
+                "none";
+
+
+            document.getElementById(
+                "addMarksForm"
+            ).reset();
+
         }
 
-        document.addEventListener("DOMContentLoaded", loadMarks);
+
+        // ==========================================
+        // PAGE LOAD
+        // ==========================================
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            loadMarks
+        );
     </script>
     <!-- Floating AI Button -->
     <button id="ai-btn" onclick="toggleAIChat()"
@@ -690,7 +1121,8 @@ Exam Type: ${record.Exam_Type}`);
             <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
                 <br>
                 <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+                Ask me about study plans, attendance, exams, marks, or career guidance.
+            </p>
         </div>
 
         <div style="display: flex; gap: 5px;">

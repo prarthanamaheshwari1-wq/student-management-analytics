@@ -857,23 +857,25 @@
         </div>
 
     </div>
-
-
-    <!-- ==========================================
-         JAVASCRIPT
-    ========================================== -->
-
     <script>
-
         const API_URL = "https://student-management-analytics.onrender.com";
 
 
         // ==========================================
-        // CURRENT USER ROLE
+        // AUTHENTICATION
         // ==========================================
 
+        const token = localStorage.getItem("token");
+
         const currentUserRole =
-            localStorage.getItem("userRole") || "admin";
+            localStorage.getItem("role") || "admin";
+
+        const user =
+            JSON.parse(localStorage.getItem("user") || "{}");
+
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
 
 
         // ==========================================
@@ -897,16 +899,6 @@
         // ==========================================
 
         function setupRBAC() {
-
-            // document.getElementById(
-            //     "userRoleBadge"
-            // ).textContent =
-            //     currentUserRole
-            //         .charAt(0)
-            //         .toUpperCase()
-            //     +
-            //     currentUserRole.slice(1);
-
 
             // Hide admin-only items
             if (currentUserRole !== "admin") {
@@ -996,20 +988,11 @@
 
             try {
 
-                /*
-                 * IMPORTANT:
-                 *
-                 * Backend route is:
-                 *
-                 * /attendance/metrics?student_id=1
-                 *
-                 * NOT:
-                 *
-                 * /attendance/metrics/1
-                 */
-
                 const response = await fetch(
-                    `${API_URL}/attendance/metrics?student_id=${studentId}`
+                    `${API_URL}/attendance/metrics?student_id=${studentId}`,
+                    {
+                        headers: authHeaders
+                    }
                 );
 
 
@@ -1098,22 +1081,25 @@
 
 
             body.innerHTML = `
-                <tr>
-                    <td
-                        colspan="10"
-                        class="message"
-                    >
-                        Loading attendance data...
-                    </td>
-                </tr>
-            `;
+        <tr>
+            <td
+                colspan="10"
+                class="message"
+            >
+                Loading attendance data...
+            </td>
+        </tr>
+    `;
 
 
             try {
 
                 const response =
                     await fetch(
-                        `${API_URL}/attendence`
+                        `${API_URL}/attendence`,
+                        {
+                            headers: authHeaders
+                        }
                     );
 
 
@@ -1139,15 +1125,15 @@
 
 
                     body.innerHTML = `
-                        <tr>
-                            <td
-                                colspan="10"
-                                class="message"
-                            >
-                                No attendance records found.
-                            </td>
-                        </tr>
-                    `;
+                <tr>
+                    <td
+                        colspan="10"
+                        class="message"
+                    >
+                        No attendance records found.
+                    </td>
+                </tr>
+            `;
 
                     return;
 
@@ -1275,16 +1261,16 @@
 
 
                 body.innerHTML = `
-                    <tr>
-                        <td
-                            colspan="10"
-                            class="message"
-                        >
-                            ❌ Unable to load attendance data.
-                            Make sure Node.js backend is running.
-                        </td>
-                    </tr>
-                `;
+            <tr>
+                <td
+                    colspan="10"
+                    class="message"
+                >
+                    ❌ Unable to load attendance data.
+                    Make sure Node.js backend is running.
+                </td>
+            </tr>
+        `;
 
             }
 
@@ -1306,12 +1292,6 @@
                 "attendanceDate"
             ).valueAsDate = new Date();
 
-
-            /*
-             * If a Student ID is already selected
-             * in the dashboard, automatically put
-             * the same ID into the modal.
-             */
 
             const selectedStudentId =
                 document.getElementById(
@@ -1409,8 +1389,8 @@
                             method: "POST",
 
                             headers: {
-                                "Content-Type":
-                                    "application/json"
+                                ...authHeaders,
+                                "Content-Type": "application/json"
                             },
 
                             body:
@@ -1450,11 +1430,7 @@
                     loadAttendance();
 
 
-                    /*
-                     * Refresh metrics for the
-                     * same student.
-                     */
-
+                    // Refresh metrics
                     const selectedStudentId =
                         document.getElementById(
                             "metricStudentId"
@@ -1507,12 +1483,11 @@
 
         function logout() {
 
-            localStorage.removeItem(
-                "userRole"
-            );
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            localStorage.removeItem("user");
 
         }
-
     </script>
     <!-- Floating AI Button -->
     <button id="ai-btn" onclick="toggleAIChat()"
@@ -1534,7 +1509,8 @@
             <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
                 <br>
                 <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+                Ask me about study plans, attendance, exams, marks, or career guidance.
+            </p>
         </div>
 
         <div style="display: flex; gap: 5px;">

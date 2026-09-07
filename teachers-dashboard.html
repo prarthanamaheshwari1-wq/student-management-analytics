@@ -443,164 +443,532 @@
     <script>
         const API_URL = "https://student-management-analytics.onrender.com";
 
+        // Get authentication details
+        const role = localStorage.getItem("role");
+        const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+        // Authentication headers
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
+
+
         // Check authentication state on page load
         document.addEventListener("DOMContentLoaded", function () {
-            // const role = localStorage.getItem("role");
-            // const user = JSON.parse(localStorage.getItem("user") || "{}");
 
             // Redirect unauthenticated users back to login
-            // if (!role || role.toLowerCase() !== "teacher") {
-            //     alert("Unauthorized access. Please log in as a teacher.");
-            //     window.location.href = "index.html";
-            //     return;
-            // }
-            const role = localStorage.getItem("role");
-            const token = localStorage.getItem("token");
-            const user = JSON.parse(localStorage.getItem("user") || "{}");
-
             if (!token || !role || role.toLowerCase() !== "teacher") {
+
                 alert("Unauthorized access. Please log in as a teacher.");
+
                 localStorage.clear();
+
                 window.location.href = "index.html";
+
                 return;
             }
-            const authHeaders = {
-                "Authorization": `Bearer ${token}`
-            };
-            // Populate header details safely
-            const firstName = user.First_Name || user.Name || user.username || 'Teacher';
-            const lastName = user.Last_Name || '';
-            const fullName = `${firstName} ${lastName}`.trim();
 
-            document.getElementById("teacherDisplayName").textContent = fullName;
-            document.getElementById("welcomeHeading").textContent = `Welcome, ${firstName}! 👋`;
 
+            // Populate teacher details safely
+            const firstName =
+                user.First_Name ||
+                user.Name ||
+                user.username ||
+                "Teacher";
+
+            const lastName =
+                user.Last_Name || "";
+
+            const fullName =
+                `${firstName} ${lastName}`.trim();
+
+
+            document.getElementById(
+                "teacherDisplayName"
+            ).textContent = fullName;
+
+
+            document.getElementById(
+                "welcomeHeading"
+            ).textContent = `Welcome, ${firstName}! 👋`;
+
+
+            // Load dashboard data
             loadDashboard();
+
             loadStudentsByClass();
+
             loadStudentsByGender();
+
         });
 
-        // Load stats
-        async function loadDashboard() {
-            try {
-                const response = await fetch(`${API_URL}/dashboard`);
-                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-                const data = await response.json();
 
-                document.getElementById("totalStudents").textContent = data.totalStudents ?? data.students ?? 0;
-                document.getElementById("totalTeachers").textContent = data.totalTeachers ?? data.teachers ?? 0;
-                document.getElementById("totalClasses").textContent = data.totalClasses ?? data.classes ?? 0;
+
+        // =====================================================
+        // LOAD DASHBOARD STATS
+        // =====================================================
+
+        async function loadDashboard() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/dashboard`,
+                        {
+                            headers: authHeaders
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `HTTP Error: ${response.status}`
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    "Dashboard Data:",
+                    data
+                );
+
+
+                document.getElementById(
+                    "totalStudents"
+                ).textContent =
+                    data.totalStudents ??
+                    data.students ??
+                    0;
+
+
+                document.getElementById(
+                    "totalTeachers"
+                ).textContent =
+                    data.totalTeachers ??
+                    data.teachers ??
+                    0;
+
+
+                document.getElementById(
+                    "totalClasses"
+                ).textContent =
+                    data.totalClasses ??
+                    data.classes ??
+                    0;
+
+
             } catch (error) {
-                console.error("Dashboard Error:", error);
-                document.getElementById("totalStudents").textContent = "Error";
-                document.getElementById("totalTeachers").textContent = "Error";
-                document.getElementById("totalClasses").textContent = "Error";
+
+                console.error(
+                    "Dashboard Error:",
+                    error
+                );
+
+
+                document.getElementById(
+                    "totalStudents"
+                ).textContent = "Error";
+
+
+                document.getElementById(
+                    "totalTeachers"
+                ).textContent = "Error";
+
+
+                document.getElementById(
+                    "totalClasses"
+                ).textContent = "Error";
+
             }
+
         }
 
-        // Load class breakdown
+
+
+        // =====================================================
+        // LOAD STUDENTS BY CLASS
+        // =====================================================
+
         async function loadStudentsByClass() {
-            const classList = document.getElementById("classList");
+
+            const classList =
+                document.getElementById(
+                    "classList"
+                );
+
+
             try {
-                const response = await fetch(`${API_URL}/students-by-class`);
-                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-                const data = await response.json();
+
+                const response =
+                    await fetch(
+                        `${API_URL}/students-by-class`,
+                        {
+                            headers: authHeaders
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `HTTP Error: ${response.status}`
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    "Class Data:",
+                    data
+                );
+
 
                 classList.innerHTML = "";
-                if (!Array.isArray(data) || data.length === 0) {
-                    classList.innerHTML = "<p>No class data available.</p>";
+
+
+                if (
+                    !Array.isArray(data) ||
+                    data.length === 0
+                ) {
+
+                    classList.innerHTML =
+                        "<p>No class data available.</p>";
+
                     return;
                 }
 
-                const maximum = Math.max(...data.map(item => Number(item.TotalStudents || item.count || item.total) || 0));
+
+                const maximum =
+                    Math.max(
+                        ...data.map(
+                            item =>
+                                Number(
+                                    item.TotalStudents ||
+                                    item.count ||
+                                    item.total
+                                ) || 0
+                        )
+                    );
+
 
                 data.forEach(item => {
-                    const total = Number(item.TotalStudents || item.count || item.total) || 0;
-                    const classNameVal = item.Class || item.class || item.ClassName || 'N/A';
 
-                    const row = document.createElement("div");
-                    row.className = "class-row";
+                    const total =
+                        Number(
+                            item.TotalStudents ||
+                            item.count ||
+                            item.total
+                        ) || 0;
 
-                    const name = document.createElement("div");
-                    name.className = "class-name";
-                    name.textContent = "Class " + classNameVal;
 
-                    const barContainer = document.createElement("div");
-                    barContainer.className = "class-bar-container";
+                    const classNameVal =
+                        item.Class ||
+                        item.class ||
+                        item.ClassName ||
+                        "N/A";
 
-                    const bar = document.createElement("div");
-                    bar.className = "class-bar";
-                    const percentage = maximum > 0 ? (total / maximum) * 100 : 0;
-                    bar.style.width = percentage + "%";
-                    barContainer.appendChild(bar);
 
-                    const number = document.createElement("div");
-                    number.className = "class-number";
-                    number.textContent = total;
+                    const row =
+                        document.createElement(
+                            "div"
+                        );
 
-                    row.appendChild(name);
-                    row.appendChild(barContainer);
-                    row.appendChild(number);
+                    row.className =
+                        "class-row";
 
-                    classList.appendChild(row);
+
+                    const name =
+                        document.createElement(
+                            "div"
+                        );
+
+                    name.className =
+                        "class-name";
+
+                    name.textContent =
+                        "Class " +
+                        classNameVal;
+
+
+                    const barContainer =
+                        document.createElement(
+                            "div"
+                        );
+
+                    barContainer.className =
+                        "class-bar-container";
+
+
+                    const bar =
+                        document.createElement(
+                            "div"
+                        );
+
+                    bar.className =
+                        "class-bar";
+
+
+                    const percentage =
+                        maximum > 0
+                            ? (total / maximum) * 100
+                            : 0;
+
+
+                    bar.style.width =
+                        percentage + "%";
+
+
+                    barContainer.appendChild(
+                        bar
+                    );
+
+
+                    const number =
+                        document.createElement(
+                            "div"
+                        );
+
+                    number.className =
+                        "class-number";
+
+                    number.textContent =
+                        total;
+
+
+                    row.appendChild(
+                        name
+                    );
+
+                    row.appendChild(
+                        barContainer
+                    );
+
+                    row.appendChild(
+                        number
+                    );
+
+
+                    classList.appendChild(
+                        row
+                    );
+
                 });
+
+
             } catch (error) {
-                console.error("Class Data Error:", error);
-                classList.innerHTML = "<p>Unable to load class data.</p>";
+
+                console.error(
+                    "Class Data Error:",
+                    error
+                );
+
+
+                classList.innerHTML =
+                    "<p>Unable to load class data.</p>";
+
             }
+
         }
 
-        // Load gender breakdown
+
+
+        // =====================================================
+        // LOAD STUDENTS BY GENDER
+        // =====================================================
+
         async function loadStudentsByGender() {
-            const genderList = document.getElementById("genderList");
+
+            const genderList =
+                document.getElementById(
+                    "genderList"
+                );
+
+
             try {
-                const response = await fetch(`${API_URL}/students-by-gender`);
-                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-                const data = await response.json();
+
+                const response =
+                    await fetch(
+                        `${API_URL}/students-by-gender`,
+                        {
+                            headers: authHeaders
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `HTTP Error: ${response.status}`
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    "Gender Data:",
+                    data
+                );
+
 
                 genderList.innerHTML = "";
-                if (!Array.isArray(data) || data.length === 0) {
-                    genderList.innerHTML = "<p>No gender data available.</p>";
+
+
+                if (
+                    !Array.isArray(data) ||
+                    data.length === 0
+                ) {
+
+                    genderList.innerHTML =
+                        "<p>No gender data available.</p>";
+
                     return;
                 }
 
+
                 data.forEach(item => {
-                    const gender = document.createElement("div");
-                    gender.className = "gender-item";
+
+                    const gender =
+                        document.createElement(
+                            "div"
+                        );
+
+                    gender.className =
+                        "gender-item";
+
 
                     let icon = "👤";
-                    const genderLabel = item.Gender || item.gender || "Other";
-                    const genderName = String(genderLabel).toLowerCase();
-                    if (genderName === "male" || genderName === "m") icon = "👨";
-                    else if (genderName === "female" || genderName === "f") icon = "👩";
 
-                    const iconDiv = document.createElement("div");
-                    iconDiv.className = "gender-icon";
-                    iconDiv.textContent = icon;
 
-                    const count = document.createElement("h4");
-                    count.textContent = item.TotalStudents ?? item.count ?? item.total ?? 0;
+                    const genderLabel =
+                        item.Gender ||
+                        item.gender ||
+                        "Other";
 
-                    const name = document.createElement("p");
-                    name.textContent = genderLabel;
 
-                    gender.appendChild(iconDiv);
-                    gender.appendChild(count);
-                    gender.appendChild(name);
+                    const genderName =
+                        String(
+                            genderLabel
+                        ).toLowerCase();
 
-                    genderList.appendChild(gender);
+
+                    if (
+                        genderName === "male" ||
+                        genderName === "m"
+                    ) {
+
+                        icon = "👨";
+
+                    }
+
+                    else if (
+                        genderName === "female" ||
+                        genderName === "f"
+                    ) {
+
+                        icon = "👩";
+
+                    }
+
+
+                    const iconDiv =
+                        document.createElement(
+                            "div"
+                        );
+
+                    iconDiv.className =
+                        "gender-icon";
+
+                    iconDiv.textContent =
+                        icon;
+
+
+                    const count =
+                        document.createElement(
+                            "h4"
+                        );
+
+                    count.textContent =
+                        item.TotalStudents ??
+                        item.count ??
+                        item.total ??
+                        0;
+
+
+                    const name =
+                        document.createElement(
+                            "p"
+                        );
+
+                    name.textContent =
+                        genderLabel;
+
+
+                    gender.appendChild(
+                        iconDiv
+                    );
+
+                    gender.appendChild(
+                        count
+                    );
+
+                    gender.appendChild(
+                        name
+                    );
+
+
+                    genderList.appendChild(
+                        gender
+                    );
+
                 });
+
+
             } catch (error) {
-                console.error("Gender Data Error:", error);
-                genderList.innerHTML = "<p>Unable to load gender data.</p>";
+
+                console.error(
+                    "Gender Data Error:",
+                    error
+                );
+
+
+                genderList.innerHTML =
+                    "<p>Unable to load gender data.</p>";
+
             }
+
         }
 
-        // Logout action
+
+
+        // =====================================================
+        // LOGOUT
+        // =====================================================
+
         function logout() {
+
             localStorage.clear();
-            window.location.href = "index.html";
+
+            window.location.href =
+                "index.html";
+
         }
+
     </script>
     <!-- Floating AI Button -->
     <button id="ai-btn" onclick="toggleAIChat()"
