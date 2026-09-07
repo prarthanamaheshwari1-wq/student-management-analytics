@@ -758,6 +758,12 @@
         const API_URL = "https://student-management-analytics.onrender.com";
         // const API_URL = "http://localhost:5000";
 
+        const token = localStorage.getItem("token");
+
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
+
         let students = [];
 
         let editingStudentId = null;
@@ -772,7 +778,9 @@
             try {
 
                 const response =
-                    await fetch(`${API_URL}/students`);
+                    await fetch(`${API_URL}/students`, {
+                        headers: authHeaders
+                    });
 
                 if (!response.ok) {
                     throw new Error("Unable to fetch students");
