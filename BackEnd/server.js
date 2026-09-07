@@ -86,190 +86,190 @@ const ROLE_CONFIG = {
     teacher: { table: "Teacher", idField: "Teacher_id" },
     student: { table: "Student", idField: "Student_id" },
 };
-app.post("/login", async (req, res) => {
-    try {
-        const { username, password } = req.body;
-
-        if (!username || !password) {
-            return res.status(400).json({
-                error: "Username and password are required."
-            });
-        }
-
-        const pool = await poolPromise;
-
-        // ------------------------------------------
-        // 1. CHECK ADMIN TABLE FIRST
-        // ------------------------------------------
-        const adminResult = await pool
-            .request()
-            .input("username", sql.VarChar, username)
-            .input("password", sql.VarChar, password)
-            .query(`
-                SELECT * FROM Admin 
-                WHERE Username = @username AND Password = @password
-            `);
-
-        if (adminResult.recordset.length > 0) {
-            const admin = adminResult.recordset[0];
-
-            const token = jwt.sign(
-                {
-                    id: admin.Admin_id,
-                    username: admin.Username,
-                    role: "admin"
-                },
-                process.env.JWT_SECRET,
-                { expiresIn: "2h" }
-            );
-
-            const { Password, ...safeAdmin } = admin;
-
-            return res.json({
-                message: "Admin login successful",
-                role: "admin",
-                adminId: admin.Admin_id,
-                user: safeAdmin,
-                token
-            });
-        }
-
-        // ------------------------------------------
-        // 2. CHECK TEACHER TABLE SECOND
-        // ------------------------------------------
-        const teacherResult = await pool
-            .request()
-            .input("username", sql.VarChar, username)
-            .input("password", sql.VarChar, password)
-            .query(`
-                SELECT * FROM Teacher 
-                WHERE (Email = @username OR Username = @username) 
-                  AND Password = @password
-            `);
-
-        if (teacherResult.recordset.length > 0) {
-            const teacher = teacherResult.recordset[0];
-
-            const teacherId = teacher.Teacher_id || teacher.id;
-
-            const token = jwt.sign(
-                {
-                    id: teacherId,
-                    username: teacher.Username || teacher.Email,
-                    role: "teacher"
-                },
-                process.env.JWT_SECRET,
-                { expiresIn: "2h" }
-            );
-
-            const { Password, ...safeTeacher } = teacher;
-
-            return res.json({
-                message: "Teacher login successful",
-                role: "teacher",
-                teacherId: teacherId,
-                user: safeTeacher,
-                token
-            });
-        }
-
-        // ------------------------------------------
-        // 3. CHECK STUDENT TABLE THIRD
-        // ------------------------------------------
-        const studentResult = await pool
-            .request()
-            .input("username", sql.VarChar, username)
-            .input("password", sql.VarChar, password)
-            .query(`
-                SELECT *, (First_Name + ' ' + Last_Name) AS Name
-                FROM Student
-                WHERE (Username = @username OR Email = @username OR CAST(Roll_No AS VARCHAR) = @username) 
-                  AND Password = @password
-            `);
-
-        if (studentResult.recordset.length > 0) {
-            const student = studentResult.recordset[0];
-
-            const token = jwt.sign(
-                {
-                    id: student.Student_id,
-                    username: student.Username,
-                    role: "student"
-                },
-                process.env.JWT_SECRET,
-                { expiresIn: "2h" }
-            );
-
-            // Remove password before sending user data to frontend
-            const { Password, ...safeStudent } = student;
-
-            return res.json({
-                message: "Student login successful",
-                role: "student",
-                studentId: student.Student_id,
-                user: safeStudent,
-                token
-            });
-        }
-
-        // ------------------------------------------
-        // IF NO MATCH FOUND IN ANY TABLE
-        // ------------------------------------------
-        return res.status(401).json({
-            error: "Invalid username/email or password."
-        });
-
-    } catch (error) {
-        console.error("LOGIN ERROR DETAILS:", error);
-
-        res.status(500).json({
-            error: "Server error during login",
-            details: error.message
-        });
-    }
-});
-// Example updated /login handler in server.js
 // app.post("/login", async (req, res) => {
 //     try {
-//         const { email, password } = req.body;
+//         const { username, password } = req.body;
 
-//         // 1. Find user in database
-//         const user = await User.findOne({ email });
-//         if (!user) {
-//             return res.status(400).json({ message: "Invalid email or password" });
+//         if (!username || !password) {
+//             return res.status(400).json({
+//                 error: "Username and password are required."
+//             });
 //         }
 
-//         // 2. Verify password (example using bcrypt or direct check)
-//         const isMatch = await bcrypt.compare(password, user.password);
-//         if (!isMatch) {
-//             return res.status(400).json({ message: "Invalid email or password" });
+//         const pool = await poolPromise;
+
+//         // ------------------------------------------
+//         // 1. CHECK ADMIN TABLE FIRST
+//         // ------------------------------------------
+//         const adminResult = await pool
+//             .request()
+//             .input("username", sql.VarChar, username)
+//             .input("password", sql.VarChar, password)
+//             .query(`
+//                 SELECT * FROM Admin 
+//                 WHERE Username = @username AND Password = @password
+//             `);
+
+//         if (adminResult.recordset.length > 0) {
+//             const admin = adminResult.recordset[0];
+
+//             const token = jwt.sign(
+//                 {
+//                     id: admin.Admin_id,
+//                     username: admin.Username,
+//                     role: "admin"
+//                 },
+//                 process.env.JWT_SECRET,
+//                 { expiresIn: "2h" }
+//             );
+
+//             const { Password, ...safeAdmin } = admin;
+
+//             return res.json({
+//                 message: "Admin login successful",
+//                 role: "admin",
+//                 adminId: admin.Admin_id,
+//                 user: safeAdmin,
+//                 token
+//             });
 //         }
 
-//         // 3. Generate JWT Token (NEW CODE)
-//         const token = jwt.sign(
-//             { id: user._id, role: user.role },
-//             process.env.JWT_SECRET || "your_secret_key", // Use your environment secret key
-//             { expiresIn: "1d" }
-//         );
+//         // ------------------------------------------
+//         // 2. CHECK TEACHER TABLE SECOND
+//         // ------------------------------------------
+//         const teacherResult = await pool
+//             .request()
+//             .input("username", sql.VarChar, username)
+//             .input("password", sql.VarChar, password)
+//             .query(`
+//                 SELECT * FROM Teacher 
+//                 WHERE (Email = @username OR Username = @username) 
+//                   AND Password = @password
+//             `);
 
-//         // 4. Send response including token, role, and user object
-//         return res.status(200).json({
-//             message: "Login successful",
-//             token: token,           // <--- Sending token here
-//             role: user.role,         // <--- Sending user role here
-//             user: {
-//                 id: user._id,
-//                 name: user.name,
-//                 email: user.email,
-//                 role: user.role
-//             }
+//         if (teacherResult.recordset.length > 0) {
+//             const teacher = teacherResult.recordset[0];
+
+//             const teacherId = teacher.Teacher_id || teacher.id;
+
+//             const token = jwt.sign(
+//                 {
+//                     id: teacherId,
+//                     username: teacher.Username || teacher.Email,
+//                     role: "teacher"
+//                 },
+//                 process.env.JWT_SECRET,
+//                 { expiresIn: "2h" }
+//             );
+
+//             const { Password, ...safeTeacher } = teacher;
+
+//             return res.json({
+//                 message: "Teacher login successful",
+//                 role: "teacher",
+//                 teacherId: teacherId,
+//                 user: safeTeacher,
+//                 token
+//             });
+//         }
+
+//         // ------------------------------------------
+//         // 3. CHECK STUDENT TABLE THIRD
+//         // ------------------------------------------
+//         const studentResult = await pool
+//             .request()
+//             .input("username", sql.VarChar, username)
+//             .input("password", sql.VarChar, password)
+//             .query(`
+//                 SELECT *, (First_Name + ' ' + Last_Name) AS Name
+//                 FROM Student
+//                 WHERE (Username = @username OR Email = @username OR CAST(Roll_No AS VARCHAR) = @username) 
+//                   AND Password = @password
+//             `);
+
+//         if (studentResult.recordset.length > 0) {
+//             const student = studentResult.recordset[0];
+
+//             const token = jwt.sign(
+//                 {
+//                     id: student.Student_id,
+//                     username: student.Username,
+//                     role: "student"
+//                 },
+//                 process.env.JWT_SECRET,
+//                 { expiresIn: "2h" }
+//             );
+
+//             // Remove password before sending user data to frontend
+//             const { Password, ...safeStudent } = student;
+
+//             return res.json({
+//                 message: "Student login successful",
+//                 role: "student",
+//                 studentId: student.Student_id,
+//                 user: safeStudent,
+//                 token
+//             });
+//         }
+
+//         // ------------------------------------------
+//         // IF NO MATCH FOUND IN ANY TABLE
+//         // ------------------------------------------
+//         return res.status(401).json({
+//             error: "Invalid username/email or password."
 //         });
 
 //     } catch (error) {
-//         console.error("Login Error:", error);
-//         return res.status(500).json({ message: "Server error during login" });
+//         console.error("LOGIN ERROR DETAILS:", error);
+
+//         res.status(500).json({
+//             error: "Server error during login",
+//             details: error.message
+//         });
 //     }
 // });
+// Example updated /login handler in server.js
+app.post("/login", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // 1. Find user in database
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid email or password" });
+        }
+
+        // 2. Verify password (example using bcrypt or direct check)
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Invalid email or password" });
+        }
+
+        // 3. Generate JWT Token (NEW CODE)
+        const token = jwt.sign(
+            { id: user._id, role: user.role },
+            process.env.JWT_SECRET || "your_secret_key", // Use your environment secret key
+            { expiresIn: "1d" }
+        );
+
+        // 4. Send response including token, role, and user object
+        return res.status(200).json({
+            message: "Login successful",
+            token: token,           // <--- Sending token here
+            role: user.role,         // <--- Sending user role here
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
+
+    } catch (error) {
+        console.error("Login Error:", error);
+        return res.status(500).json({ message: "Server error during login" });
+    }
+});
 // ======================================================
 // STUDENTS
 // ======================================================
