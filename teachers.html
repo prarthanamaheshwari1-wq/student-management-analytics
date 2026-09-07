@@ -696,104 +696,90 @@
 
 
     <script>
-
         const API_URL = "https://student-management-analytics.onrender.com";
         // const API_URL = "http://localhost:5000";
-        console.log("CURRENT API URL:", API_URL);
-        let teachers = [];
 
+        const token = localStorage.getItem("token");
+
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
+
+        console.log("CURRENT API URL:", API_URL);
+
+        let teachers = [];
         let editingTeacherId = null;
 
 
-        /* =====================================================
+        /* =========================
            LOAD TEACHERS
-        ===================================================== */
+        ========================= */
 
         async function loadTeachers() {
 
             try {
 
-                const response =
-                    await fetch(`${API_URL}/teachers`);
+                const response = await fetch(
+                    `${API_URL}/teachers`,
+                    {
+                        headers: authHeaders
+                    }
+                );
 
                 if (!response.ok) {
-                    throw new Error("Unable to fetch teachers");
+
+                    const errorText = await response.text();
+
+                    console.error(
+                        "Teachers API Response:",
+                        errorText
+                    );
+
+                    throw new Error(
+                        `HTTP error! Status: ${response.status}`
+                    );
                 }
 
                 teachers = await response.json();
 
-                displayTeachers(teachers);
+                displayTeachers();
 
             } catch (error) {
 
-                console.error(error);
+                console.error(
+                    "Error loading teachers:",
+                    error
+                );
 
-                document.getElementById(
-                    "teacherTable"
-                ).innerHTML = `
-
-            <tr>
-
-                <td
-                    colspan="7"
-                    class="error"
-                >
-
-                    Unable to load teachers.
-
-                    <br>
-
-                    Make sure the backend server is running.
-
-                </td>
-
-            </tr>
-        `;
+                alert(
+                    "Unable to load teachers data."
+                );
             }
         }
 
 
-        /* =====================================================
+        /* =========================
            DISPLAY TEACHERS
-        ===================================================== */
+        ========================= */
 
-        function displayTeachers(data) {
+        function displayTeachers() {
 
-            const table =
-                document.getElementById(
-                    "teacherTable"
+            const tableBody =
+                document.getElementById("teacherTable");
+
+            if (!tableBody) {
+                console.error(
+                    "Element with ID 'teacherTable' not found."
                 );
-
-            table.innerHTML = "";
-
-
-            if (data.length === 0) {
-
-                table.innerHTML = `
-
-            <tr>
-
-                <td
-                    colspan="7"
-                    class="loading"
-                >
-
-                    No teachers found.
-
-                </td>
-
-            </tr>
-        `;
-
                 return;
             }
 
+            tableBody.innerHTML = "";
 
-            data.forEach(teacher => {
+            teachers.forEach(teacher => {
 
                 const row =
                     document.createElement("tr");
-
 
                 row.innerHTML = `
 
@@ -802,8 +788,8 @@
             </td>
 
             <td>
-                ${teacher.First_Name ?? ""}
-                ${teacher.Last_Name ?? ""}
+                ${(teacher.First_Name ?? "")}
+                ${(teacher.Last_Name ?? "")}
             </td>
 
             <td>
@@ -821,6 +807,8 @@
             <td>
                 ${teacher.Qualification ?? ""}
             </td>
+
+            <td>
 
                 <button
                     class="action-button view-button"
@@ -840,238 +828,182 @@
                     class="action-button delete-button"
                     onclick="deleteTeacher(${teacher.Teacher_id})"
                 >
-                    🗑️ Delete
+                    🗑 Delete
                 </button>
 
             </td>
         `;
 
-
-                table.appendChild(row);
+                tableBody.appendChild(row);
 
             });
         }
 
 
-        /* =====================================================
-           OPEN ADD MODAL
-        ===================================================== */
-
-        function openAddModal() {
-
-            editingTeacherId = null;
-
-            document.getElementById(
-                "modalTitle"
-            ).textContent =
-                "Add Teacher";
-
-
-            document.getElementById(
-                "teacherForm"
-            ).reset();
-
-
-            document.getElementById(
-                "teacherModal"
-            ).style.display =
-                "block";
-        }
-
-
-        /* =====================================================
-           CLOSE MODAL
-        ===================================================== */
-
-        function closeModal() {
-
-            document.getElementById(
-                "teacherModal"
-            ).style.display =
-                "none";
-        }
-
-
-        /* =====================================================
-           ADD / UPDATE TEACHER
-        ===================================================== */
+        /* =========================
+           SEARCH TEACHERS
+        ========================= */
 
         document
-            .getElementById("teacherForm")
-            .addEventListener(
-                "submit",
-                async function (event) {
+            .getElementById("searchInput")
+            ?.addEventListener(
+                "input",
+                function () {
 
-                    event.preventDefault();
+                    const searchValue =
+                        this.value.toLowerCase();
 
+                    const filteredTeachers =
+                        teachers.filter(teacher => {
 
-                    const teacherData = {
+                            const fullName =
+                                `${teacher.First_Name ?? ""} ${teacher.Last_Name ?? ""}`
+                                    .toLowerCase();
 
-                        First_Name:
-                            document.getElementById(
-                                "First_Name"
-                            ).value,
-
-                        Last_Name:
-                            document.getElementById(
-                                "Last_Name"
-                            ).value,
-
-                        Email:
-                            document.getElementById(
-                                "Email"
-                            ).value,
-
-                        Phone_No:
-                            document.getElementById(
-                                "Phone_No"
-                            ).value,
-
-                        Subject:
-                            document.getElementById(
-                                "Subject"
-                            ).value,
-
-                        Qualification:
-                            document.getElementById(
-                                "Qualification"
-                            ).value,
-
-                        Address:
-                            document.getElementById(
-                                "Address"
-                            ).value
-                    };
-                    console.log("DATA BEING SENT:", teacherData);
-
-
-                    try {
-
-                        let response;
-
-
-                        /* ADD */
-
-                        if (editingTeacherId === null) {
-
-                            response =
-                                await fetch(
-                                    `${API_URL}/teachers`,
-                                    {
-
-                                        method: "POST",
-
-                                        headers: {
-                                            "Content-Type":
-                                                "application/json"
-                                        },
-
-                                        body:
-                                            JSON.stringify(
-                                                teacherData
-                                            )
-                                    }
-                                );
-
-                        }
-
-
-                        /* UPDATE */
-
-                        else {
-
-                            response =
-                                await fetch(
-                                    `${API_URL}/teachers/${editingTeacherId}`,
-                                    {
-
-                                        method: "PUT",
-
-                                        headers: {
-                                            "Content-Type":
-                                                "application/json"
-                                        },
-
-                                        body:
-                                            JSON.stringify(
-                                                teacherData
-                                            )
-                                    }
-                                );
-                        }
-
-
-                        const result =
-                            await response.json();
-
-
-                        if (!response.ok) {
-
-                            throw new Error(
-                                result.details ||
-                                result.error ||
-                                "Operation failed"
+                            return (
+                                fullName.includes(searchValue) ||
+                                String(
+                                    teacher.Teacher_id ?? ""
+                                ).includes(searchValue) ||
+                                String(
+                                    teacher.Email ?? ""
+                                ).toLowerCase().includes(searchValue) ||
+                                String(
+                                    teacher.Phone_No ?? ""
+                                ).includes(searchValue) ||
+                                String(
+                                    teacher.Subject ?? ""
+                                ).toLowerCase().includes(searchValue) ||
+                                String(
+                                    teacher.Qualification ?? ""
+                                ).toLowerCase().includes(searchValue)
                             );
-                        }
 
+                        });
 
-                        alert(
-                            editingTeacherId === null
-                                ? "Teacher added successfully!"
-                                : "Teacher updated successfully!"
-                        );
-
-
-                        closeModal();
-
-                        loadTeachers();
-
-
-                    } catch (error) {
-
-                        console.error(error);
-
-                        alert(
-                            "Error: " +
-                            error.message
-                        );
-                    }
-
+                    displayFilteredTeachers(
+                        filteredTeachers
+                    );
                 }
             );
 
 
-        /* =====================================================
+        function displayFilteredTeachers(
+            filteredTeachers
+        ) {
+
+            const tableBody =
+                document.getElementById("teacherTable");
+
+            if (!tableBody) {
+                return;
+            }
+
+            tableBody.innerHTML = "";
+
+            filteredTeachers.forEach(teacher => {
+
+                const row =
+                    document.createElement("tr");
+
+                row.innerHTML = `
+
+            <td>
+                ${teacher.Teacher_id ?? ""}
+            </td>
+
+            <td>
+                ${(teacher.First_Name ?? "")}
+                ${(teacher.Last_Name ?? "")}
+            </td>
+
+            <td>
+                ${teacher.Email ?? ""}
+            </td>
+
+            <td>
+                ${teacher.Phone_No ?? ""}
+            </td>
+
+            <td>
+                ${teacher.Subject ?? ""}
+            </td>
+
+            <td>
+                ${teacher.Qualification ?? ""}
+            </td>
+
+            <td>
+
+                <button
+                    class="action-button view-button"
+                    onclick="viewTeacher(${teacher.Teacher_id})"
+                >
+                    👁 View
+                </button>
+
+                <button
+                    class="action-button edit-button"
+                    onclick="editTeacher(${teacher.Teacher_id})"
+                >
+                    ✏️ Edit
+                </button>
+
+                <button
+                    class="action-button delete-button"
+                    onclick="deleteTeacher(${teacher.Teacher_id})"
+                >
+                    🗑 Delete
+                </button>
+
+            </td>
+        `;
+
+                tableBody.appendChild(row);
+
+            });
+        }
+
+
+        /* =========================
            VIEW TEACHER
-        ===================================================== */
+        ========================= */
 
         async function viewTeacher(id) {
 
             try {
 
-                const response =
-                    await fetch(
-                        `${API_URL}/teachers/${id}`
-                    );
-
-
-                const teacher =
-                    await response.json();
-                console.log("Teacher Data:", teacher);
-
+                const response = await fetch(
+                    `${API_URL}/teachers/${id}`,
+                    {
+                        headers: authHeaders
+                    }
+                );
 
                 if (!response.ok) {
 
+                    const errorText =
+                        await response.text();
+
+                    console.error(
+                        "View Teacher API Response:",
+                        errorText
+                    );
+
                     throw new Error(
-                        teacher.error ||
-                        "Unable to load teacher"
+                        `HTTP error! Status: ${response.status}`
                     );
                 }
 
+                const teacher =
+                    await response.json();
 
-                document.getElementById(
-                    "teacherDetails"
-                ).innerHTML = `
+                const details =
+                    document.getElementById(
+                        "teacherDetails"
+                    );
+
+                details.innerHTML = `
 
             <p>
                 <strong>Teacher ID:</strong>
@@ -1107,6 +1039,7 @@
                 <strong>Qualification:</strong>
                 ${teacher.Qualification ?? ""}
             </p>
+
             <p>
                 <strong>Address:</strong>
                 ${teacher.Address ?? ""}
@@ -1114,16 +1047,16 @@
 
         `;
 
-
                 document.getElementById(
                     "detailsModal"
-                ).style.display =
-                    "block";
-
+                ).style.display = "block";
 
             } catch (error) {
 
-                console.error(error);
+                console.error(
+                    "Error viewing teacher:",
+                    error
+                );
 
                 alert(
                     "Unable to load teacher details."
@@ -1132,9 +1065,403 @@
         }
 
 
-        /* =====================================================
+        /* =========================
+           EDIT TEACHER
+        ========================= */
+
+        async function editTeacher(id) {
+
+            try {
+
+                const response = await fetch(
+                    `${API_URL}/teachers/${id}`,
+                    {
+                        headers: authHeaders
+                    }
+                );
+
+                if (!response.ok) {
+
+                    const errorText =
+                        await response.text();
+
+                    console.error(
+                        "Edit Teacher API Response:",
+                        errorText
+                    );
+
+                    throw new Error(
+                        `HTTP error! Status: ${response.status}`
+                    );
+                }
+
+                const teacher =
+                    await response.json();
+
+                editingTeacherId =
+                    teacher.Teacher_id;
+
+
+                /* Fill form using the ACTUAL IDs
+                   from your HTML */
+
+                document.getElementById(
+                    "First_Name"
+                ).value =
+                    teacher.First_Name ?? "";
+
+                document.getElementById(
+                    "Last_Name"
+                ).value =
+                    teacher.Last_Name ?? "";
+
+                document.getElementById(
+                    "Email"
+                ).value =
+                    teacher.Email ?? "";
+
+                document.getElementById(
+                    "Phone_No"
+                ).value =
+                    teacher.Phone_No ?? "";
+
+                document.getElementById(
+                    "Subject"
+                ).value =
+                    teacher.Subject ?? "";
+
+                document.getElementById(
+                    "Qualification"
+                ).value =
+                    teacher.Qualification ?? "";
+
+                document.getElementById(
+                    "Address"
+                ).value =
+                    teacher.Address ?? "";
+
+
+                document.getElementById(
+                    "modalTitle"
+                ).textContent =
+                    "Edit Teacher";
+
+
+                document.querySelector(
+                    "#teacherForm .save-button"
+                ).textContent =
+                    "Update Teacher";
+
+
+                document.getElementById(
+                    "teacherModal"
+                ).style.display = "block";
+
+            } catch (error) {
+
+                console.error(
+                    "Error editing teacher:",
+                    error
+                );
+
+                alert(
+                    "Unable to load teacher data for editing."
+                );
+            }
+        }
+
+
+        /* =========================
+           SAVE TEACHER
+           ADD + UPDATE
+        ========================= */
+
+        async function saveTeacher(event) {
+
+            event.preventDefault();
+
+
+            const teacherData = {
+
+                First_Name:
+                    document.getElementById(
+                        "First_Name"
+                    ).value,
+
+                Last_Name:
+                    document.getElementById(
+                        "Last_Name"
+                    ).value,
+
+                Email:
+                    document.getElementById(
+                        "Email"
+                    ).value,
+
+                Phone_No:
+                    document.getElementById(
+                        "Phone_No"
+                    ).value,
+
+                Subject:
+                    document.getElementById(
+                        "Subject"
+                    ).value,
+
+                Qualification:
+                    document.getElementById(
+                        "Qualification"
+                    ).value,
+
+                Address:
+                    document.getElementById(
+                        "Address"
+                    ).value
+            };
+
+
+            try {
+
+                let response;
+
+
+                /* =========================
+                   ADD TEACHER
+                ========================= */
+
+                if (editingTeacherId === null) {
+
+                    response = await fetch(
+                        `${API_URL}/teachers`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+                                ...authHeaders
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    teacherData
+                                )
+                        }
+                    );
+
+                }
+
+
+                /* =========================
+                   UPDATE TEACHER
+                ========================= */
+
+                else {
+
+                    response = await fetch(
+                        `${API_URL}/teachers/${editingTeacherId}`,
+                        {
+                            method: "PUT",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+                                ...authHeaders
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    teacherData
+                                )
+                        }
+                    );
+                }
+
+
+                const result =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.error ||
+                        result.message ||
+                        `HTTP ${response.status}`
+                    );
+                }
+
+
+                if (editingTeacherId === null) {
+
+                    alert(
+                        "Teacher added successfully."
+                    );
+
+                } else {
+
+                    alert(
+                        "Teacher updated successfully."
+                    );
+                }
+
+
+                editingTeacherId = null;
+
+                document.getElementById(
+                    "teacherForm"
+                ).reset();
+
+                document.getElementById(
+                    "modalTitle"
+                ).textContent =
+                    "Add Teacher";
+
+                document.querySelector(
+                    "#teacherForm .save-button"
+                ).textContent =
+                    "Save Teacher";
+
+                closeModal();
+
+                await loadTeachers();
+
+            } catch (error) {
+
+                console.error(
+                    "Error saving teacher:",
+                    error
+                );
+
+                alert(
+                    "Unable to save teacher record."
+                );
+            }
+        }
+
+
+        /* =========================
+           DELETE TEACHER
+        ========================= */
+
+        async function deleteTeacher(id) {
+
+            const confirmDelete =
+                confirm(
+                    "Are you sure you want to delete this teacher?"
+                );
+
+            if (!confirmDelete) {
+                return;
+            }
+
+
+            try {
+
+                const response = await fetch(
+                    `${API_URL}/teachers/${id}`,
+                    {
+                        method: "DELETE",
+                        headers: authHeaders
+                    }
+                );
+
+
+                const result =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.error ||
+                        result.message ||
+                        `HTTP ${response.status}`
+                    );
+                }
+
+
+                alert(
+                    "Teacher deleted successfully."
+                );
+
+                await loadTeachers();
+
+            } catch (error) {
+
+                console.error(
+                    "Error deleting teacher:",
+                    error
+                );
+
+                alert(
+                    "Unable to delete teacher."
+                );
+            }
+        }
+
+
+        /* =========================
+           OPEN ADD MODAL
+        ========================= */
+
+        function openAddModal() {
+
+            editingTeacherId = null;
+
+            document.getElementById(
+                "teacherForm"
+            ).reset();
+
+            document.getElementById(
+                "modalTitle"
+            ).textContent =
+                "Add Teacher";
+
+            document.querySelector(
+                "#teacherForm .save-button"
+            ).textContent =
+                "Save Teacher";
+
+            document.getElementById(
+                "teacherModal"
+            ).style.display =
+                "block";
+        }
+
+
+        /* =========================
+           CLOSE ADD / EDIT MODAL
+        ========================= */
+
+        function closeModal() {
+
+            document.getElementById(
+                "teacherModal"
+            ).style.display =
+                "none";
+
+            editingTeacherId = null;
+
+            document.getElementById(
+                "teacherForm"
+            ).reset();
+
+            document.getElementById(
+                "modalTitle"
+            ).textContent =
+                "Add Teacher";
+
+            document.querySelector(
+                "#teacherForm .save-button"
+            ).textContent =
+                "Save Teacher";
+        }
+
+
+        /* =========================
            CLOSE DETAILS MODAL
-        ===================================================== */
+        ========================= */
 
         function closeDetailsModal() {
 
@@ -1145,255 +1472,13 @@
         }
 
 
-        /* =====================================================
-           EDIT TEACHER
-        ===================================================== */
-
-        async function editTeacher(id) {
-
-            try {
-
-                const response =
-                    await fetch(
-                        `${API_URL}/teachers/${id}`
-                    );
-
-
-                const teacher =
-                    await response.json();
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        teacher.error ||
-                        "Unable to load teacher"
-                    );
-                }
-
-
-                editingTeacherId =
-                    teacher.Teacher_id;
-
-
-                document.getElementById(
-                    "modalTitle"
-                ).textContent =
-                    "Edit Teacher";
-
-
-                document.getElementById(
-                    "First_Name"
-                ).value =
-                    teacher.First_Name ?? "";
-
-
-                document.getElementById(
-                    "Last_Name"
-                ).value =
-                    teacher.Last_Name ?? "";
-
-
-                document.getElementById(
-                    "Email"
-                ).value =
-                    teacher.Email ?? "";
-
-
-                document.getElementById(
-                    "Phone_No"
-                ).value =
-                    teacher.Phone_No ?? "";
-
-
-                document.getElementById(
-                    "Subject"
-                ).value =
-                    teacher.Subject ?? "";
-
-
-                document.getElementById(
-                    "Qualification"
-                ).value =
-                    teacher.Qualification ?? "";
-
-
-                document.getElementById(
-                    "Address"
-                ).value =
-                    teacher.Address ?? "";
-
-
-                document.getElementById(
-                    "teacherModal"
-                ).style.display =
-                    "block";
-
-
-            } catch (error) {
-
-                console.error(error);
-
-                alert(
-                    "Unable to load teacher for editing."
-                );
-            }
-        }
-
-
-        /* =====================================================
-           DELETE TEACHER
-        ===================================================== */
-
-        async function deleteTeacher(id) {
-
-            const confirmDelete =
-                confirm(
-                    "Are you sure you want to delete this teacher?"
-                );
-
-
-            if (!confirmDelete) {
-                return;
-            }
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        `${API_URL}/teachers/${id}`,
-                        {
-                            method: "DELETE"
-                        }
-                    );
-
-
-                const result =
-                    await response.json();
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        result.details ||
-                        result.error ||
-                        "Delete failed"
-                    );
-                }
-
-
-                alert(
-                    "Teacher deleted successfully!"
-                );
-
-
-                loadTeachers();
-
-
-            } catch (error) {
-
-                console.error(error);
-
-                alert(
-                    "Unable to delete teacher: " +
-                    error.message
-                );
-            }
-        }
-
-
-        /* =====================================================
-           SEARCH
-        ===================================================== */
-
-        document
-            .getElementById("searchInput")
-            .addEventListener(
-                "input",
-                function () {
-
-                    const search =
-                        this.value
-                            .toLowerCase()
-                            .trim();
-
-
-                    const filtered =
-                        teachers.filter(
-                            teacher => {
-
-                                return (
-
-                                    String(
-                                        teacher.Teacher_id ?? ""
-                                    )
-                                        .toLowerCase()
-                                        .includes(search)
-
-                                    ||
-
-                                    String(
-                                        teacher.First_Name ?? ""
-                                    )
-                                        .toLowerCase()
-                                        .includes(search)
-
-                                    ||
-
-                                    String(
-                                        teacher.Last_Name ?? ""
-                                    )
-                                        .toLowerCase()
-                                        .includes(search)
-
-                                    ||
-
-                                    String(
-                                        teacher.Email ?? ""
-                                    )
-                                        .toLowerCase()
-                                        .includes(search)
-
-                                    ||
-
-                                    String(
-                                        teacher.Phone_No ?? ""
-                                    )
-                                        .toLowerCase()
-                                        .includes(search)
-
-                                    ||
-
-                                    String(
-                                        teacher.Subject ?? ""
-                                    )
-                                        .toLowerCase()
-                                        .includes(search)
-
-                                    ||
-
-                                    String(
-                                        teacher.Qualification ?? ""
-                                    )
-                                        .toLowerCase()
-                                        .includes(search)
-                                );
-                            }
-                        );
-
-
-                    displayTeachers(filtered);
-
-                }
-            );
-
-
-        /* =====================================================
-           CLOSE MODALS WHEN CLICKING OUTSIDE
-        ===================================================== */
-
-        window.onclick =
+        /* =========================
+           CLOSE MODALS WHEN CLICKING
+           OUTSIDE
+        ========================= */
+
+        window.addEventListener(
+            "click",
             function (event) {
 
                 const teacherModal =
@@ -1406,31 +1491,41 @@
                         "detailsModal"
                     );
 
-
-                if (
-                    event.target ===
-                    teacherModal
-                ) {
+                if (event.target === teacherModal) {
                     closeModal();
                 }
 
-
-                if (
-                    event.target ===
-                    detailsModal
-                ) {
+                if (event.target === detailsModal) {
                     closeDetailsModal();
                 }
+            }
+        );
 
-            };
 
+        /* =========================
+           FORM SUBMIT
+        ========================= */
 
-        /* =====================================================
-           START PAGE
-        ===================================================== */
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
 
-        loadTeachers();
+                const form =
+                    document.getElementById(
+                        "teacherForm"
+                    );
 
+                if (form) {
+
+                    form.addEventListener(
+                        "submit",
+                        saveTeacher
+                    );
+                }
+
+                loadTeachers();
+            }
+        );
     </script>
     <!-- Floating AI Button -->
     <button id="ai-btn" onclick="toggleAIChat()"
@@ -1452,7 +1547,8 @@
             <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
                 <br>
                 <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+                Ask me about study plans, attendance, exams, marks, or career guidance.
+            </p>
         </div>
 
         <div style="display: flex; gap: 5px;">
