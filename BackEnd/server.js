@@ -236,7 +236,8 @@ app.post("/login", async (req, res) => {
 // GET ALL STUDENTS
 // ======================================================
 
-app.get("/students", async (req, res) => {
+// app.get("/students", async (req, res) => {
+app.get("/students", auth(["admin"]), async (req, res) => {
 
     try {
 
@@ -665,101 +666,110 @@ ${question}
 // GET ONE STUDENT
 // ======================================================
 
-app.get("/students/:id", async (req, res) => {
+// app.get("/students/:id", auth(["admin", "teacher", "student"]), async (req, res) => {
 
-    try {
+//     try {
 
-        const studentId = parseInt(req.params.id, 10);
+//         const studentId = parseInt(req.params.id, 10);
 
-        if (isNaN(studentId)) {
+//         if (isNaN(studentId)) {
 
-            return res.status(400).json({
-                error: "Invalid Student ID"
-            });
+//             return res.status(400).json({
+//                 error: "Invalid Student ID"
+//             });
 
-        }
+//         }
+//         if (
+//             req.user.role === "student" &&
+//             req.user.id !== studentId
+//         ) {
+//             return res.status(403).json({
+//                 error: "Access denied"
+//             });
+//         }
 
-        const pool = await poolPromise;
+//         const pool = await poolPromise;
 
-        const result = await pool
-            .request()
-            .input(
-                "Student_id",
-                sql.Int,
-                studentId
-            )
-            .query(`
-                SELECT *
-                FROM Student
-                WHERE Student_id = @Student_id
-            `);
+//         const result = await pool
+//             .request()
+//             .input(
+//                 "Student_id",
+//                 sql.Int,
+//                 studentId
+//             )
+//             .query(`
+//                 SELECT *
+//                 FROM Student
+//                 WHERE Student_id = @Student_id
+//             `);
 
-        if (result.recordset.length === 0) {
+//         if (result.recordset.length === 0) {
 
-            return res.status(404).json({
-                error: "Student not found"
-            });
+//             return res.status(404).json({
+//                 error: "Student not found"
+//             });
 
-        }
+//         }
 
-        // Get student record
-        const student = result.recordset[0];
+//         // Get student record
+//         const student = result.recordset[0];
 
-        // ==================================================
-        // FORMAT DATE OF BIRTH
-        // ==================================================
+//         // ==================================================
+//         // FORMAT DATE OF BIRTH
+//         // ==================================================
 
-        if (student.DOB) {
+//         if (student.DOB) {
 
-            student.DOB = new Date(student.DOB)
-                .toISOString()
-                .split("T")[0]
-                .split("-")
-                .reverse()
-                .join("-");
+//             student.DOB = new Date(student.DOB)
+//                 .toISOString()
+//                 .split("T")[0]
+//                 .split("-")
+//                 .reverse()
+//                 .join("-");
 
-        }
+//         }
 
-        // ==================================================
-        // FORMAT ADMISSION DATE
-        // ==================================================
+//         // ==================================================
+//         // FORMAT ADMISSION DATE
+//         // ==================================================
 
-        if (student.Admission_Date) {
+//         if (student.Admission_Date) {
 
-            student.Admission_Date = new Date(student.Admission_Date)
-                .toISOString()
-                .split("T")[0]
-                .split("-")
-                .reverse()
-                .join("-");
+//             student.Admission_Date = new Date(student.Admission_Date)
+//                 .toISOString()
+//                 .split("T")[0]
+//                 .split("-")
+//                 .reverse()
+//                 .join("-");
 
-        }
+//         }
 
-        // ==================================================
-        // SEND STUDENT DATA
-        // ==================================================
+//         // ==================================================
+//         // SEND STUDENT DATA
+//         // ==================================================
 
-        res.json(student);
+//         res.json(student);
 
-    } catch (error) {
+//     } catch (error) {
 
-        console.error("Get Student Error:", error);
+//         console.error("Get Student Error:", error);
 
-        res.status(500).json({
-            error: "Unable to get student",
-            details: error.message
-        });
+//         res.status(500).json({
+//             error: "Unable to get student",
+//             details: error.message
+//         });
 
-    }
+//     }
 
-});
+// });
 // ==========================================
 // GET SINGLE STUDENT PROFILE BY ID
 // ==========================================
 // ==========================================
 // UPDATE STUDENT RECORD BY ID
 // ==========================================
-app.put("/students/:id", async (req, res) => {
+// app.put("/students/:id", async (req, res) => {
+app.put("/students/:id", auth(["admin"]), async (req, res) => {
     try {
         const studentId = parseInt(req.params.id, 10);
         if (isNaN(studentId)) {
@@ -834,7 +844,8 @@ app.put("/students/:id", async (req, res) => {
 // ADD STUDENT
 // ======================================================
 
-app.post("/students", async (req, res) => {
+// app.post("/students", async (req, res) => {
+app.post("/students", auth(["admin"]), async (req, res) => {
     try {
         const {
             Roll_No,
@@ -949,76 +960,77 @@ app.post("/students", async (req, res) => {
 // ==========================================
 // UPDATE STUDENT RECORD BY ID
 // ==========================================
-app.put("/students/:id", async (req, res) => {
-    try {
-        const studentId = parseInt(req.params.id, 10);
-        if (isNaN(studentId)) {
-            return res.status(400).json({ error: "Invalid Student ID format." });
-        }
+// app.put("/students/:id", async (req, res) => {
+//     try {
+//         const studentId = parseInt(req.params.id, 10);
+//         if (isNaN(studentId)) {
+//             return res.status(400).json({ error: "Invalid Student ID format." });
+//         }
 
-        const {
-            Roll_No,
-            First_Name,
-            Last_Name,
-            Class,
-            Section,
-            Gender,
-            Email,
-            Phone_No,
-            DOB,
-            Admission_Date
-        } = req.body;
+//         const {
+//             Roll_No,
+//             First_Name,
+//             Last_Name,
+//             Class,
+//             Section,
+//             Gender,
+//             Email,
+//             Phone_No,
+//             DOB,
+//             Admission_Date
+//         } = req.body;
 
-        const pool = await poolPromise;
+//         const pool = await poolPromise;
 
-        const result = await pool
-            .request()
-            .input("Student_id", sql.Int, studentId)
-            .input("Roll_No", sql.VarChar(20), Roll_No)
-            .input("First_Name", sql.VarChar(50), First_Name)
-            .input("Last_Name", sql.VarChar(50), Last_Name)
-            .input("Class", sql.VarChar(20), Class)
-            .input("Section", sql.VarChar(10), Section)
-            .input("Gender", sql.VarChar(10), Gender)
-            .input("Email", sql.VarChar(100), Email)
-            .input("Phone_No", sql.VarChar(20), Phone_No)
-            .input("DOB", sql.Date, DOB ? DOB : null)
-            .input("Admission_Date", sql.Date, Admission_Date ? Admission_Date : null)
-            .query(`
-                UPDATE Student
-                SET
-                    Roll_No = @Roll_No,
-                    First_Name = @First_Name,
-                    Last_Name = @Last_Name,
-                    Class = @Class,
-                    Section = @Section,
-                    Gender = @Gender,
-                    Email = @Email,
-                    Phone_No = @Phone_No,
-                    DOB = @DOB,
-                    Admission_Date = @Admission_Date
-                WHERE Student_id = @Student_id
-            `);
+//         const result = await pool
+//             .request()
+//             .input("Student_id", sql.Int, studentId)
+//             .input("Roll_No", sql.VarChar(20), Roll_No)
+//             .input("First_Name", sql.VarChar(50), First_Name)
+//             .input("Last_Name", sql.VarChar(50), Last_Name)
+//             .input("Class", sql.VarChar(20), Class)
+//             .input("Section", sql.VarChar(10), Section)
+//             .input("Gender", sql.VarChar(10), Gender)
+//             .input("Email", sql.VarChar(100), Email)
+//             .input("Phone_No", sql.VarChar(20), Phone_No)
+//             .input("DOB", sql.Date, DOB ? DOB : null)
+//             .input("Admission_Date", sql.Date, Admission_Date ? Admission_Date : null)
+//             .query(`
+//                 UPDATE Student
+//                 SET
+//                     Roll_No = @Roll_No,
+//                     First_Name = @First_Name,
+//                     Last_Name = @Last_Name,
+//                     Class = @Class,
+//                     Section = @Section,
+//                     Gender = @Gender,
+//                     Email = @Email,
+//                     Phone_No = @Phone_No,
+//                     DOB = @DOB,
+//                     Admission_Date = @Admission_Date
+//                 WHERE Student_id = @Student_id
+//             `);
 
-        if (result.rowsAffected[0] === 0) {
-            return res.status(404).json({ error: "Student not found." });
-        }
+//         if (result.rowsAffected[0] === 0) {
+//             return res.status(404).json({ error: "Student not found." });
+//         }
 
-        res.json({ message: "Student record updated successfully!" });
-    } catch (error) {
-        console.error("Update Student Error:", error);
-        res.status(500).json({
-            error: "Failed to update student details.",
-            details: error.message
-        });
-    }
-});
+//         res.json({ message: "Student record updated successfully!" });
+//     } catch (error) {
+//         console.error("Update Student Error:", error);
+//         res.status(500).json({
+//             error: "Failed to update student details.",
+//             details: error.message
+//         });
+//     }
+// });
 
 // ======================================================
 // DELETE STUDENT
 // ======================================================
 
-app.delete("/students/:id", async (req, res) => {
+// app.delete("/students/:id", async (req, res) => {
+app.delete("/students/:id", auth(["admin"]), async (req, res) => {
 
     try {
 
@@ -1095,7 +1107,8 @@ app.delete("/students/:id", async (req, res) => {
 // GET ALL TEACHERS
 // ======================================================
 
-app.get("/teachers", async (req, res) => {
+// app.get("/teachers", async (req, res) => {
+app.get("/teachers", auth(["admin"]), async (req, res) => {
     try {
         const pool = await poolPromise;
 
@@ -1180,7 +1193,8 @@ app.get("/teachers/:id", async (req, res) => {
 // ADD TEACHER
 // ======================================================
 
-app.post("/teachers", async (req, res) => {
+// app.post("/teachers", async (req, res) => {
+app.post("/teachers", auth(["admin"]), async (req, res) => {
 
     console.log("POST /teachers received");
     console.log("Teacher data:", req.body);
@@ -1344,7 +1358,8 @@ app.post("/teachers", async (req, res) => {
 // UPDATE TEACHER
 // ======================================================
 
-app.put("/teachers/:id", async (req, res) => {
+// app.put("/teachers/:id", async (req, res) => {
+app.put("/teachers/:id", auth(["admin"]), async (req, res) => {
 
     try {
 
@@ -1475,7 +1490,8 @@ app.put("/teachers/:id", async (req, res) => {
 // DELETE TEACHER
 // ======================================================
 
-app.delete("/teachers/:id", async (req, res) => {
+// app.delete("/teachers/:id", async (req, res) => {
+app.delete("/teachers/:id", auth(["admin"]), async (req, res) => {
     try {
         const teacherId = parseInt(req.params.id, 10);
 
@@ -1521,7 +1537,8 @@ app.delete("/teachers/:id", async (req, res) => {
 // ATTENDENCE
 // ======================================================
 
-app.get("/attendence", async (req, res) => {
+// app.get("/attendence", async (req, res) => {
+app.get("/attendence", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -1555,7 +1572,8 @@ app.get("/attendence", async (req, res) => {
 
 // GET ALL MARKS
 
-app.get("/marks", async (req, res) => {
+// app.get("/marks", async (req, res) => {
+app.get("/marks", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -1586,7 +1604,8 @@ app.get("/marks", async (req, res) => {
 // GET MARKS FOR ONE STUDENT
 // ======================================================
 
-app.get("/students/:id/marks", async (req, res) => {
+// app.get("/students/:id/marks", async (req, res) => {
+app.get("/students/:id/marks", auth(["admin", "teacher", "student"]), async (req, res) => {
 
     try {
 
@@ -1595,6 +1614,12 @@ app.get("/students/:id/marks", async (req, res) => {
         if (isNaN(studentId)) {
             return res.status(400).json({
                 error: "Invalid Student ID"
+            });
+        }
+
+        if (req.user.role === "student" && req.user.id !== studentId) {
+            return res.status(403).json({
+                error: "Access denied"
             });
         }
 
@@ -1633,7 +1658,8 @@ app.get("/students/:id/marks", async (req, res) => {
     }
 
 });
-app.post("/marks", async (req, res) => {
+// app.post("/marks", async (req, res) => {
+app.post("/marks", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -1690,7 +1716,8 @@ app.post("/marks", async (req, res) => {
 // DELETE MARKS
 // ======================================================
 
-app.delete("/marks/:id", async (req, res) => {
+// app.delete("/marks/:id", async (req, res) => {
+app.delete("/marks/:id", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -1735,7 +1762,8 @@ app.delete("/marks/:id", async (req, res) => {
 
 });
 // UPDATE MARKS
-app.put("/marks/:id", async (req, res) => {
+// app.put("/marks/:id", async (req, res) => {
+app.put("/marks/:id", auth(["admin", "teacher"]), async (req, res) => {
     try {
         const marksId = parseInt(req.params.id, 10);
 
@@ -1810,7 +1838,8 @@ app.put("/marks/:id", async (req, res) => {
 // ======================================================
 
 // GET ALL FEES
-app.get("/fees", async (req, res) => {
+// app.get("/fees", async (req, res) => {
+app.get("/fees", auth(["admin"]), async (req, res) => {
     try {
         const pool = await poolPromise;
         const result = await pool
@@ -1844,7 +1873,8 @@ ORDER BY f.Fee_id DESC
 });
 
 // ADD NEW FEE RECORD
-app.post("/fees", async (req, res) => {
+// app.post("/fees", async (req, res) => {
+app.post("/fees", auth(["admin"]), async (req, res) => {
     try {
         const { Student_id, Total_Fee, Paid_Fee, Payment_Date, Payment_Method } = req.body;
 
@@ -1875,7 +1905,8 @@ app.post("/fees", async (req, res) => {
 });
 
 // DELETE FEE RECORD
-app.delete("/fees/:id", async (req, res) => {
+// app.delete("/fees/:id", async (req, res) => {
+app.delete("/fees/:id", auth(["admin"]), async (req, res) => {
     try {
         const feeId = parseInt(req.params.id, 10);
         if (isNaN(feeId)) {
@@ -1905,7 +1936,8 @@ app.delete("/fees/:id", async (req, res) => {
 // ======================================================
 // UPDATE FEE RECORD
 // ======================================================
-app.put("/fees/:id", async (req, res) => {
+// app.put("/fees/:id", async (req, res) => {
+app.put("/fees/:id", auth(["admin"]), async (req, res) => {
     try {
         const { id } = req.params;
         const { Total_Fee, Paid_Fee, Payment_Date, Payment_Method } = req.body;
@@ -1941,7 +1973,7 @@ app.put("/fees/:id", async (req, res) => {
 // DASHBOARD
 // ======================================================
 
-app.get("/dashboard", async (req, res) => {
+app.get("/dashboard", auth(["admin"]), async (req, res) => {
 
     try {
 
@@ -2001,7 +2033,8 @@ app.get("/dashboard", async (req, res) => {
 // TOTAL STUDENTS
 // ======================================================
 
-app.get("/total-students", async (req, res) => {
+// app.get("/total-students", async (req, res) => {
+app.get("/total-students", auth(["admin"]), async (req, res) => {
 
     try {
 
@@ -2034,7 +2067,8 @@ app.get("/total-students", async (req, res) => {
 // TOTAL TEACHERS
 // ======================================================
 
-app.get("/total-teachers", async (req, res) => {
+// app.get("/total-teachers", async (req, res) => {
+app.get("/total-teachers", auth(["admin"]), async (req, res) => {
 
     try {
 
@@ -2067,7 +2101,8 @@ app.get("/total-teachers", async (req, res) => {
 // TOTAL CLASSES
 // ======================================================
 
-app.get("/total-classes", async (req, res) => {
+// app.get("/total-classes", async (req, res) => {
+app.get("/total-classes", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -2100,7 +2135,8 @@ app.get("/total-classes", async (req, res) => {
 // STUDENTS BY CLASS
 // ======================================================
 
-app.get("/students-by-class", async (req, res) => {
+// app.get("/students-by-class", async (req, res) => {
+app.get("/students-by-class", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -2140,7 +2176,8 @@ app.get("/students-by-class", async (req, res) => {
 // STUDENTS BY GENDER
 // ======================================================
 
-app.get("/students-by-gender", async (req, res) => {
+// app.get("/students-by-gender", async (req, res) => {
+app.get("/students-by-gender", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -2182,7 +2219,8 @@ app.get("/students-by-gender", async (req, res) => {
 // REPORTS SUMMARY
 // ======================================================
 
-app.get("/reports/summary", async (req, res) => {
+// app.get("/reports/summary", async (req, res) => {
+app.get("/reports/summary", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -2244,7 +2282,8 @@ app.get("/reports/summary", async (req, res) => {
 // STUDENT REPORT
 // ======================================================
 
-app.get("/reports/students", async (req, res) => {
+// app.get("/reports/students", async (req, res) => {
+app.get("/reports/students", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -2298,7 +2337,8 @@ app.get("/reports/students", async (req, res) => {
 // STUDENTS BY CLASS REPORT
 // ======================================================
 
-app.get("/reports/students-by-class", async (req, res) => {
+// app.get("/reports/students-by-class", async (req, res) => {
+app.get("/reports/students-by-class", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -2349,7 +2389,8 @@ app.get("/reports/students-by-class", async (req, res) => {
 // ATTENDANCE REPORT
 // ======================================================
 
-app.get("/reports/attendance", async (req, res) => {
+// app.get("/reports/attendance", async (req, res) => {
+app.get("/reports/attendance", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -2454,7 +2495,8 @@ app.get("/reports/attendance", async (req, res) => {
 // ACADEMIC REPORT
 // ======================================================
 
-app.get("/reports/academic", async (req, res) => {
+// app.get("/reports/academic", async (req, res) => {
+app.get("/reports/academic", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -2516,7 +2558,8 @@ app.get("/reports/academic", async (req, res) => {
 // SUBJECT PERFORMANCE REPORT
 // ======================================================
 
-app.get("/reports/subject-performance", async (req, res) => {
+// app.get("/reports/subject-performance", async (req, res) => {
+app.get("/reports/subject-performance", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -2579,7 +2622,8 @@ app.get("/reports/subject-performance", async (req, res) => {
 // FEE REPORT
 // ======================================================
 
-app.get("/reports/fees", async (req, res) => {
+// app.get("/reports/fees", async (req, res) => {
+app.get("/reports/fees", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -2641,7 +2685,8 @@ app.get("/reports/fees", async (req, res) => {
 // FEE SUMMARY
 // ======================================================
 
-app.get("/reports/fee-summary", async (req, res) => {
+// app.get("/reports/fee-summary", async (req, res) => {
+app.get("/reports/fee-summary", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -2695,7 +2740,8 @@ app.get("/reports/fee-summary", async (req, res) => {
 // LOW ATTENDANCE REPORT
 // ======================================================
 
-app.get("/reports/low-attendance", async (req, res) => {
+// app.get("/reports/low-attendance", async (req, res) => {
+app.get("/reports/low-attendance", auth(["admin", "teacher"]), async (req, res) => {
 
     try {
 
@@ -2826,7 +2872,8 @@ app.get("/test-report", (req, res) => {
 
 });
 
-app.post("/attendence", async (req, res) => {
+// app.post("/attendence", async (req, res) => {
+app.post("/attendence", auth(["admin", "teacher"]), async (req, res) => {
 
     console.log("======================================");
     console.log("POST /attendence RECEIVED");
@@ -3076,7 +3123,8 @@ app.post("/attendence", async (req, res) => {
         });
     }
 });
-app.get("/attendance/metrics", async (req, res) => {
+// app.get("/attendance/metrics", async (req, res) => {
+app.get("/attendance/metrics", auth(["admin", "teacher", "student"]), async (req, res) => {
 
     try {
 
@@ -3085,6 +3133,14 @@ app.get("/attendance/metrics", async (req, res) => {
         if (isNaN(studentId)) {
             return res.status(400).json({
                 error: "Valid Student ID is required"
+            });
+        }
+        if (
+            req.user.role === "student" &&
+            req.user.id !== studentId
+        ) {
+            return res.status(403).json({
+                error: "Access denied"
             });
         }
 
@@ -3198,7 +3254,8 @@ app.get("/attendance/metrics", async (req, res) => {
 // ======================================================
 
 // GET ADMIN PROFILE
-app.get("/admin/profile", async (req, res) => {
+// app.get("/admin/profile", async (req, res) => {
+app.get("/admin/profile", auth(["admin"]), async (req, res) => {
 
     try {
 
@@ -3241,7 +3298,8 @@ app.get("/admin/profile", async (req, res) => {
 
 
 // UPDATE ADMIN PROFILE
-app.put("/admin/profile", async (req, res) => {
+// app.put("/admin/profile", async (req, res) => {
+app.put("/admin/profile", auth(["admin"]), async (req, res) => {
 
     console.log("======================================");
     console.log("PUT /admin/profile RECEIVED");
@@ -3347,7 +3405,8 @@ app.put("/admin/profile", async (req, res) => {
 // ======================================================
 
 // GET ADMIN PROFILE
-app.get("/profile", async (req, res) => {
+// app.get("/profile", async (req, res) => {
+app.get("/profile", auth(["admin"]), async (req, res) => {
 
     try {
 
@@ -3393,7 +3452,8 @@ app.get("/profile", async (req, res) => {
 
 
 // UPDATE ADMIN PROFILE
-app.put("/profile", async (req, res) => {
+// app.put("/profile", async (req, res) => {
+app.put("/profile", auth(["admin"]), async (req, res) => {
 
     console.log("======================================");
     console.log("PUT /profile RECEIVED");
@@ -3487,11 +3547,19 @@ const PORT = process.env.PORT || 5000;
 // ==========================================
 // GET SINGLE STUDENT PROFILE BY ID
 // ==========================================
-app.get("/students/:id", async (req, res) => {
+app.get("/students/:id", auth(["admin", "teacher", "student"]), async (req, res) => {
     try {
         const studentId = parseInt(req.params.id, 10);
         if (isNaN(studentId)) {
             return res.status(400).json({ error: "Invalid Student ID format." });
+        }
+        if (
+            req.user.role === "student" &&
+            req.user.id !== studentId
+        ) {
+            return res.status(403).json({
+                error: "Access denied"
+            });
         }
 
         const pool = await poolPromise;
