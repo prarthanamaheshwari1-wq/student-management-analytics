@@ -1058,7 +1058,8 @@
 
                                         headers: {
                                             "Content-Type":
-                                                "application/json"
+                                                "application/json",
+                                            "Authorization": `Bearer ${token}`
                                         },
 
                                         body:
@@ -1144,10 +1145,13 @@
 
             try {
 
-                const response =
-                    await fetch(
-                        `${API_URL}/students/${id}`
-                    );
+                // const response =
+                //     await fetch(
+                //         `${API_URL}/students/${id}`
+                //     );
+                const response = await fetch(`${API_URL}/students/${id}`, {
+                    headers: authHeaders
+                });
 
 
                 const student =
@@ -1299,7 +1303,10 @@
 
                 const response =
                     await fetch(
-                        `${API_URL}/students/${id}`
+                        `${API_URL}/students/${id}`,
+                        {
+                            headers: authHeaders
+                        }
                     );
 
 
@@ -1430,13 +1437,17 @@
 
             try {
 
-                const response =
-                    await fetch(
-                        `${API_URL}/students/${id}`,
-                        {
-                            method: "DELETE"
-                        }
-                    );
+                // const response =
+                //     await fetch(
+                //         `${ API_URL } / students / ${ id }`,
+                //         {
+                //             method: "DELETE"
+                //         }
+                //     );
+                const response = await fetch(`${ API_URL } / students / ${ id }`, {
+                    method: "DELETE",
+                    headers: authHeaders
+                });
 
 
                 const result =
