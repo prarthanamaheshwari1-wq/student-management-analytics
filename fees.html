@@ -702,8 +702,14 @@
                         <td colspan="9" class="message">Loading fees data...</td>
                     </tr>
                 `;
+                const token = localStorage.getItem("token");
 
-                const response = await fetch(`${API_URL}/fees`);
+                // const response = await fetch(`${API_URL}/fees`);
+                const response = await fetch(`${API_URL}/fees`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
 
                 if (!response.ok) {
                     throw new Error(`HTTP Error: ${response.status}`);
@@ -808,6 +814,7 @@
         // ADD FEE RECORD
         async function addFee() {
             try {
+                const token = localStorage.getItem("token");
                 const total = parseFloat(document.getElementById("totalFee").value);
                 const paid = parseFloat(document.getElementById("paidFee").value);
                 const pending = parseFloat(document.getElementById("pendingFee").value);
@@ -824,7 +831,10 @@
 
                 const response = await fetch(`${API_URL}/fees`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
                     body: JSON.stringify(data)
                 });
 
@@ -883,6 +893,8 @@
         // UPDATE FEE RECORD
         async function updateFee() {
 
+            const token = localStorage.getItem("token");
+
             const feeId = document.getElementById("editFeeId").value;
 
             const total = parseFloat(
@@ -920,7 +932,8 @@
                     {
                         method: "PUT",
                         headers: {
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`
                         },
                         body: JSON.stringify(payload)
                     }
@@ -983,11 +996,15 @@
 
         // DELETE FEE RECORD
         async function deleteFee(feeId) {
+            const token = localStorage.getItem("token");
             if (!confirm(`Are you sure you want to delete Fee ID #${feeId}?`)) return;
 
             try {
                 const response = await fetch(`${API_URL}/fees/${feeId}`, {
-                    method: "DELETE"
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 });
 
                 const result = await response.json();
@@ -1097,7 +1114,8 @@
             <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
                 <br>
                 <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
+                Ask me about study plans, attendance, exams, marks, or career guidance.
+            </p>
         </div>
 
         <div style="display: flex; gap: 5px;">
