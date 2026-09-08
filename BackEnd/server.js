@@ -829,7 +829,8 @@ app.put("/students/:id", auth(["admin"]), async (req, res) => {
             Phone_No,
             DOB,
             Admission_Date,
-            Username
+            Username,
+            Address
         } = req.body;
 
         const pool = await poolPromise;
@@ -851,6 +852,7 @@ app.put("/students/:id", auth(["admin"]), async (req, res) => {
             .input("DOB", sql.Date, DOB ? DOB : null)
             .input("Admission_Date", sql.Date, Admission_Date ? Admission_Date : null)
             .input("Username", sql.VarChar(50), finalUsername)
+            .input("Address", sql.VarChar(225), Address)
             .query(`
                 UPDATE Student
                 SET
@@ -863,6 +865,7 @@ app.put("/students/:id", auth(["admin"]), async (req, res) => {
                     Email = @Email,
                     Phone_No = @Phone_No,
                     DOB = @DOB,
+                    Address = @Address,
                     Admission_Date = @Admission_Date,
                     Username = @Username
                 WHERE Student_id = @Student_id
