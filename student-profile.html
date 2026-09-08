@@ -276,10 +276,14 @@
                 const className = student.Class || student.class || "N/A";
                 const section = student.Section || student.section || "N/A";
                 const gender = student.Gender || student.gender || "N/A";
-                const dob = student.DOB || student.dob || "N/A";
+                const dob = (student.DOB || student.dob)
+                    ? new Date(student.DOB || student.dob).toLocaleDateString("en-GB")
+                    : "N/A";
                 const phone = student.Phone_No || student.phone_no || student.phone || "N/A";
                 const email = student.Email || student.email || "N/A";
-                const admissionDate = student.Admission_Date || student.admission_date || "N/A";
+                const admissionDate = (student.Admission_Date || student.admission_date)
+                    ? new Date(student.Admission_Date || student.admission_date).toLocaleDateString("en-GB")
+                    : "N/A";
                 const address = student.Address || student.address || "N/A";
 
                 // 3. Render student details into the UI
