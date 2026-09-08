@@ -8,16 +8,16 @@
     <title>Settings - Student Management System</title>
     <link rel="stylesheet" href="style_darkMode.css">
     <script>
-    // Execute immediately on page load to prevent flashing light background
-    (function() {
-        if (localStorage.getItem("darkMode") === "enabled") {
-            document.documentElement.classList.add("dark-mode");
-            document.addEventListener("DOMContentLoaded", function() {
-                document.body.classList.add("dark-mode");
-            });
-        }
-    })();
-</script>
+        // Execute immediately on page load to prevent flashing light background
+        (function () {
+            if (localStorage.getItem("darkMode") === "enabled") {
+                document.documentElement.classList.add("dark-mode");
+                document.addEventListener("DOMContentLoaded", function () {
+                    document.body.classList.add("dark-mode");
+                });
+            }
+        })();
+    </script>
 
     <style>
         :root {
@@ -477,7 +477,8 @@
             <h3>Settings</h3>
             <div class="admin-profile">
                 <span id="headerUserName">Admin</span>
-                <span id="userRoleBadge" style="font-size: 12px; background-color: #2563eb; color: white; padding: 2px 8px; border-radius: 12px;">User</span>
+                <span id="userRoleBadge"
+                    style="font-size: 12px; background-color: #2563eb; color: white; padding: 2px 8px; border-radius: 12px;">User</span>
                 <div class="admin-icon">👤</div>
             </div>
         </header>
@@ -600,7 +601,8 @@
                                 <p>Receive alerts about attendance.</p>
                             </div>
                             <label class="toggle">
-                                <input type="checkbox" id="attendanceNotification" onchange="saveNotificationSettings()">
+                                <input type="checkbox" id="attendanceNotification"
+                                    onchange="saveNotificationSettings()">
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -658,273 +660,241 @@
     <!-- ================= JAVASCRIPT ================= -->
 
     <script>
-    const API_URL = "https://student-management-analytics.onrender.com";
+        const API_URL = "https://student-management-analytics.onrender.com";
 
-    /* ================= ROLE ================= */
-    const currentUserRole = localStorage.getItem("userRole") || "admin";
+        /* ================= ROLE ================= */
+        const currentUserRole = localStorage.getItem("userRole") || "admin";
 
-    /* ================= PAGE LOAD ================= */
-    document.addEventListener("DOMContentLoaded", function () {
-        setupRBAC();
-        loadProfile();
-        loadSystemSettings();
-        loadNotificationSettings();
-        loadDarkMode();
-    });
-
-    /* ================= RBAC ================= */
-    function setupRBAC() {
-        const role = currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
-        document.getElementById("userRoleBadge").textContent = role;
-        document.getElementById("profileRole").value = role;
-
-        if (currentUserRole !== "admin") {
-            document.querySelectorAll(".admin-only").forEach(function (element) {
-                element.style.display = "none";
-            });
-        }
-    }
-
-    /* ================= SETTINGS TABS ================= */
-    function showSection(sectionId, button) {
-        document.querySelectorAll(".settings-section").forEach(function (section) {
-            section.classList.remove("active");
+        /* ================= PAGE LOAD ================= */
+        document.addEventListener("DOMContentLoaded", function () {
+            setupRBAC();
+            loadProfile();
+            loadSystemSettings();
+            loadNotificationSettings();
+            loadDarkMode();
         });
 
-        document.querySelectorAll(".settings-tab").forEach(function (tab) {
-            tab.classList.remove("active");
-        });
+        /* ================= RBAC ================= */
+        function setupRBAC() {
+            const role = currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
+            document.getElementById("userRoleBadge").textContent = role;
+            document.getElementById("profileRole").value = role;
 
-        const section = document.getElementById(sectionId);
-        if (section) section.classList.add("active");
-        if (button) button.classList.add("active");
-    }
-
-    /* ================= PROFILE FIX ================= */
-    async function saveProfile() {
-        const name = document.getElementById("profileName").value.trim();
-        const email = document.getElementById("profileEmail").value.trim();
-
-        if (!name || !email) {
-            alert("Please enter name and email.");
-            return;
+            if (currentUserRole !== "admin") {
+                document.querySelectorAll(".admin-only").forEach(function (element) {
+                    element.style.display = "none";
+                });
+            }
         }
 
-        try {
-            const response = await fetch(`${API_URL}/admin/profile`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ Name: name, Email: email })
+        /* ================= SETTINGS TABS ================= */
+        function showSection(sectionId, button) {
+            document.querySelectorAll(".settings-section").forEach(function (section) {
+                section.classList.remove("active");
             });
 
-            const data = await response.json();
+            document.querySelectorAll(".settings-tab").forEach(function (tab) {
+                tab.classList.remove("active");
+            });
 
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to update profile");
+            const section = document.getElementById(sectionId);
+            if (section) section.classList.add("active");
+            if (button) button.classList.add("active");
+        }
+
+        /* ================= PROFILE FIX ================= */
+        async function saveProfile() {
+            const name = document.getElementById("profileName").value.trim();
+            const email = document.getElementById("profileEmail").value.trim();
+
+            if (!name || !email) {
+                alert("Please enter name and email.");
+                return;
             }
 
-            // Save to localStorage so UI updates reliably everywhere
-            localStorage.setItem("profileName", name);
-            localStorage.setItem("profileEmail", email);
+            try {
+                const response = await fetch(`${API_URL}/admin/profile`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ Name: name, Email: email })
+                });
 
-            document.getElementById("headerUserName").textContent = name;
-            showSuccessMessage("profileMessage", "Profile updated successfully!");
-        } catch (error) {
-            console.error("Profile Update Error:", error);
-            // Fallback local persistence if backend is offline during test
-            localStorage.setItem("profileName", name);
-            localStorage.setItem("profileEmail", email);
-            document.getElementById("headerUserName").textContent = name;
-            showSuccessMessage("profileMessage", "Profile saved locally!");
-        }
-    }
+                const data = await response.json();
 
-    async function loadProfile() {
-        try {
-            const response = await fetch(`${API_URL}/admin/profile`);
-            const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || "Failed to update profile");
+                }
 
-            if (!response.ok) throw new Error(data.error || "Failed to load profile");
+                // Save to localStorage so UI updates reliably everywhere
+                localStorage.setItem("profileName", name);
+                localStorage.setItem("profileEmail", email);
 
-            const loadedName = data.Name || data.profile?.Name || localStorage.getItem("profileName") || "Admin";
-            const loadedEmail = data.Email || data.profile?.Email || localStorage.getItem("profileEmail") || "admin@school.com";
-
-            document.getElementById("profileName").value = loadedName;
-            document.getElementById("profileEmail").value = loadedEmail;
-            document.getElementById("headerUserName").textContent = loadedName;
-
-            localStorage.setItem("profileName", loadedName);
-            localStorage.setItem("profileEmail", loadedEmail);
-        } catch (error) {
-            console.error("Load Profile Error:", error);
-            // Load fallback local data
-            const savedName = localStorage.getItem("profileName") || "Admin User";
-            const savedEmail = localStorage.getItem("profileEmail") || "admin@school.com";
-            document.getElementById("profileName").value = savedName;
-            document.getElementById("profileEmail").value = savedEmail;
-            document.getElementById("headerUserName").textContent = savedName;
-        }
-    }
-
-    /* ================= SUCCESS MESSAGE ================= */
-    function showSuccessMessage(elementId, message) {
-        const element = document.getElementById(elementId);
-        if (!element) return;
-
-        element.textContent = message;
-        element.style.display = "block";
-
-        setTimeout(function () {
-            element.style.display = "none";
-        }, 3000);
-    }
-
-    /* ================= PASSWORD ================= */
-    async function changePassword() {
-        const current = document.getElementById("currentPassword").value.trim();
-        const newPassword = document.getElementById("newPassword").value.trim();
-        const confirm = document.getElementById("confirmPassword").value.trim();
-
-        if (!current || !newPassword || !confirm) {
-            alert("Please fill all password fields.");
-            return;
+                document.getElementById("headerUserName").textContent = name;
+                showSuccessMessage("profileMessage", "Profile updated successfully!");
+            } catch (error) {
+                console.error("Profile Update Error:", error);
+                // Fallback local persistence if backend is offline during test
+                localStorage.setItem("profileName", name);
+                localStorage.setItem("profileEmail", email);
+                document.getElementById("headerUserName").textContent = name;
+                showSuccessMessage("profileMessage", "Profile saved locally!");
+            }
         }
 
-        if (newPassword !== confirm) {
-            alert("New password and confirm password do not match.");
-            return;
+        async function loadProfile() {
+            try {
+                const response = await fetch(`${API_URL}/admin/profile`);
+                const data = await response.json();
+
+                if (!response.ok) throw new Error(data.error || "Failed to load profile");
+
+                const loadedName = data.Name || data.profile?.Name || localStorage.getItem("profileName") || "Admin";
+                const loadedEmail = data.Email || data.profile?.Email || localStorage.getItem("profileEmail") || "admin@school.com";
+
+                document.getElementById("profileName").value = loadedName;
+                document.getElementById("profileEmail").value = loadedEmail;
+                document.getElementById("headerUserName").textContent = loadedName;
+
+                localStorage.setItem("profileName", loadedName);
+                localStorage.setItem("profileEmail", loadedEmail);
+            } catch (error) {
+                console.error("Load Profile Error:", error);
+                // Load fallback local data
+                const savedName = localStorage.getItem("profileName") || "Admin User";
+                const savedEmail = localStorage.getItem("profileEmail") || "admin@school.com";
+                document.getElementById("profileName").value = savedName;
+                document.getElementById("profileEmail").value = savedEmail;
+                document.getElementById("headerUserName").textContent = savedName;
+            }
         }
 
-        if (newPassword.length < 6) {
-            alert("New password must be at least 6 characters.");
-            return;
+        /* ================= SUCCESS MESSAGE ================= */
+        function showSuccessMessage(elementId, message) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            element.textContent = message;
+            element.style.display = "block";
+
+            setTimeout(function () {
+                element.style.display = "none";
+            }, 3000);
         }
 
-        try {
-            const response = await fetch(`${API_URL}/change-password`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ currentPassword: current, newPassword: newPassword })
-            });
+        /* ================= PASSWORD ================= */
+        async function changePassword() {
+            const current = document.getElementById("currentPassword").value.trim();
+            const newPassword = document.getElementById("newPassword").value.trim();
+            const confirm = document.getElementById("confirmPassword").value.trim();
 
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || "Failed to update password");
+            if (!current || !newPassword || !confirm) {
+                alert("Please fill all password fields.");
+                return;
+            }
 
-            showSuccessMessage("accountMessage", "Password updated successfully!");
-            document.getElementById("currentPassword").value = "";
-            document.getElementById("newPassword").value = "";
-            document.getElementById("confirmPassword").value = "";
-        } catch (error) {
-            console.error("Password Update Error:", error);
-            showSuccessMessage("accountMessage", "Password details verified locally.");
+            if (newPassword !== confirm) {
+                alert("New password and confirm password do not match.");
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                alert("New password must be at least 6 characters.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/change-password`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ currentPassword: current, newPassword: newPassword })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Failed to update password");
+
+                showSuccessMessage("accountMessage", "Password updated successfully!");
+                document.getElementById("currentPassword").value = "";
+                document.getElementById("newPassword").value = "";
+                document.getElementById("confirmPassword").value = "";
+            } catch (error) {
+                console.error("Password Update Error:", error);
+                showSuccessMessage("accountMessage", "Password details verified locally.");
+            }
         }
-    }
 
-    /* ================= SYSTEM SETTINGS ================= */
-    function saveSystemSettings() {
-        const institute = document.getElementById("instituteName").value.trim();
-        const year = document.getElementById("academicYear").value;
+        /* ================= SYSTEM SETTINGS ================= */
+        function saveSystemSettings() {
+            const institute = document.getElementById("instituteName").value.trim();
+            const year = document.getElementById("academicYear").value;
 
-        if (!institute) {
-            alert("Please enter institute name.");
-            return;
+            if (!institute) {
+                alert("Please enter institute name.");
+                return;
+            }
+
+            localStorage.setItem("instituteName", institute);
+            localStorage.setItem("academicYear", year);
+
+            alert("System settings saved successfully!");
         }
 
-        localStorage.setItem("instituteName", institute);
-        localStorage.setItem("academicYear", year);
+        function loadSystemSettings() {
+            const institute = localStorage.getItem("instituteName");
+            const year = localStorage.getItem("academicYear");
 
-        alert("System settings saved successfully!");
-    }
-
-    function loadSystemSettings() {
-        const institute = localStorage.getItem("instituteName");
-        const year = localStorage.getItem("academicYear");
-
-        if (institute) document.getElementById("instituteName").value = institute;
-        if (year) document.getElementById("academicYear").value = year;
-    }
-
-    /* ================= NOTIFICATIONS ================= */
-    function saveNotificationSettings() {
-        const attendance = document.getElementById("attendanceNotification").checked;
-        const fees = document.getElementById("feeNotification").checked;
-        const results = document.getElementById("resultNotification").checked;
-
-        localStorage.setItem("attendanceNotification", attendance);
-        localStorage.setItem("feeNotification", fees);
-        localStorage.setItem("resultNotification", results);
-    }
-
-    function loadNotificationSettings() {
-        const attendance = localStorage.getItem("attendanceNotification");
-        const fees = localStorage.getItem("feeNotification");
-        const results = localStorage.getItem("resultNotification");
-
-        document.getElementById("attendanceNotification").checked = attendance === null ? true : (attendance === "true");
-        document.getElementById("feeNotification").checked = fees === null ? true : (fees === "true");
-        document.getElementById("resultNotification").checked = results === null ? true : (results === "true");
-    }
-
-    /* ================= DARK MODE FIX ================= */
-    function toggleDarkMode() {
-        const isDarkMode = document.getElementById("darkMode").checked;
-        if (isDarkMode) {
-            document.body.classList.add("dark-mode");
-            document.documentElement.classList.add("dark-mode");
-            localStorage.setItem("darkMode", "enabled");
-        } else {
-            document.body.classList.remove("dark-mode");
-            document.documentElement.classList.remove("dark-mode");
-            localStorage.setItem("darkMode", "disabled");
+            if (institute) document.getElementById("instituteName").value = institute;
+            if (year) document.getElementById("academicYear").value = year;
         }
-    }
 
-    function loadDarkMode() {
-        const darkModeState = localStorage.getItem("darkMode");
-        const isEnabled = darkModeState === "enabled";
-        document.getElementById("darkMode").checked = isEnabled;
-        if (isEnabled) {
-            document.body.classList.add("dark-mode");
+        /* ================= NOTIFICATIONS ================= */
+        function saveNotificationSettings() {
+            const attendance = document.getElementById("attendanceNotification").checked;
+            const fees = document.getElementById("feeNotification").checked;
+            const results = document.getElementById("resultNotification").checked;
+
+            localStorage.setItem("attendanceNotification", attendance);
+            localStorage.setItem("feeNotification", fees);
+            localStorage.setItem("resultNotification", results);
         }
-    }
 
-    /* ================= LOGOUT ================= */
-    function logout() {
-        localStorage.removeItem("userRole");
-    }
-</script>
-<!-- Floating AI Button -->
-    <button id="ai-btn" onclick="toggleAIChat()"
-        style="position: fixed; bottom: 20px; right: 20px; background-color: #4285F4; color: white; border: none; padding: 12px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">
-        🤖 Ask AI Tutor
-    </button>
+        function loadNotificationSettings() {
+            const attendance = localStorage.getItem("attendanceNotification");
+            const fees = localStorage.getItem("feeNotification");
+            const results = localStorage.getItem("resultNotification");
 
-    <!-- AI Assistant Modal -->
-    <div id="ai-modal"
-        style="display: none; position: fixed; bottom: 80px; right: 20px; width: 320px; background: #1e1e2d; color: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); padding: 15px; z-index: 1000; font-family: sans-serif;">
-        <div
-            style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 8px;">
-            <h3 style="margin: 0; font-size: 15px;">Gemini Academic Assistant</h3>
-            <button onclick="toggleAIChat()"
-                style="background: none; border: none; color: white; font-weight: bold; cursor: pointer;">✕</button>
-        </div>
+            document.getElementById("attendanceNotification").checked = attendance === null ? true : (attendance === "true");
+            document.getElementById("feeNotification").checked = fees === null ? true : (fees === "true");
+            document.getElementById("resultNotification").checked = results === null ? true : (results === "true");
+        }
 
-        <div id="chat-box" style="height: 220px; overflow-y: auto; margin: 10px 0; font-size: 13px;">
-            <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
-                <br>
-                <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.</p>
-        </div>
+        /* ================= DARK MODE FIX ================= */
+        function toggleDarkMode() {
+            const isDarkMode = document.getElementById("darkMode").checked;
+            if (isDarkMode) {
+                document.body.classList.add("dark-mode");
+                document.documentElement.classList.add("dark-mode");
+                localStorage.setItem("darkMode", "enabled");
+            } else {
+                document.body.classList.remove("dark-mode");
+                document.documentElement.classList.remove("dark-mode");
+                localStorage.setItem("darkMode", "disabled");
+            }
+        }
 
-        <div style="display: flex; gap: 5px;">
-            <input type="text" id="user-input" placeholder="Ask something..."
-                style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #444; background: #2b2b3d; color: white; outline: none;">
-            <button onclick="sendToGemini()"
-                style="background: #34A853; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">Send</button>
-        </div>
-    </div>
+        function loadDarkMode() {
+            const darkModeState = localStorage.getItem("darkMode");
+            const isEnabled = darkModeState === "enabled";
+            document.getElementById("darkMode").checked = isEnabled;
+            if (isEnabled) {
+                document.body.classList.add("dark-mode");
+            }
+        }
 
-    <script src="ai-assistant.js"></script>
+        /* ================= LOGOUT ================= */
+        function logout() {
+            localStorage.removeItem("userRole");
+        }
+    </script>
 </body>
 
 </html>

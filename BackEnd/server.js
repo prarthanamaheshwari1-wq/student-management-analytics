@@ -309,7 +309,7 @@ app.get("/students", auth(["admin"]), async (req, res) => {
 });
 
 // app.post("/ai-assistant", async (req, res) => {
-app.post("/ai-assistant", auth(["student","admin","teacher"]), async (req, res) => {
+app.post("/ai-assistant", auth(["student"]), async (req, res) => {
 
     try {
 
