@@ -25,7 +25,6 @@
 
 
     <style>
-
         /* ================= GENERAL ================= */
 
         * {
@@ -386,7 +385,6 @@
             }
 
         }
-
     </style>
 
 </head>
@@ -597,12 +595,8 @@
                     </p>
 
 
-                    <img
-                        src="images/institution-overview.png"
-                        alt="Institution Overview"
-                        class="dashboard-image"
-                        onclick="openDashboard(this.src)"
-                    >
+                    <img src="images/institution-overview.png" alt="Institution Overview" class="dashboard-image"
+                        onclick="openDashboard(this.src)">
 
 
                     <div class="view-text">
@@ -629,12 +623,8 @@
                     </p>
 
 
-                    <img
-                        src="images/attendance-analytics.png"
-                        alt="Attendance Analytics"
-                        class="dashboard-image"
-                        onclick="openDashboard(this.src)"
-                    >
+                    <img src="images/attendance-analytics.png" alt="Attendance Analytics" class="dashboard-image"
+                        onclick="openDashboard(this.src)">
 
 
                     <div class="view-text">
@@ -661,12 +651,8 @@
                     </p>
 
 
-                    <img
-                        src="images/fees-analytics.png"
-                        alt="Fees Analytics"
-                        class="dashboard-image"
-                        onclick="openDashboard(this.src)"
-                    >
+                    <img src="images/fees-analytics.png" alt="Fees Analytics" class="dashboard-image"
+                        onclick="openDashboard(this.src)">
 
 
                     <div class="view-text">
@@ -693,12 +679,8 @@
                     </p>
 
 
-                    <img
-                        src="images/marks-analytics.png"
-                        alt="Marks Analytics"
-                        class="dashboard-image"
-                        onclick="openDashboard(this.src)"
-                    >
+                    <img src="images/marks-analytics.png" alt="Marks Analytics" class="dashboard-image"
+                        onclick="openDashboard(this.src)">
 
 
                     <div class="view-text">
@@ -720,57 +702,58 @@
 
     <!-- ================= FULL SCREEN IMAGE MODAL ================= -->
 
-    <div
-        id="dashboardModal"
-        class="image-modal"
-        onclick="closeDashboard(event)"
-    >
+    <div id="dashboardModal" class="image-modal" onclick="closeDashboard(event)">
 
 
-        <span
-            class="close-button"
-            onclick="closeModal()"
-        >
+        <span class="close-button" onclick="closeModal()">
 
             &times;
 
         </span>
 
 
-        <img
-            id="fullDashboardImage"
-            class="modal-image"
-            src=""
-            alt="Power BI Dashboard"
-        >
+        <img id="fullDashboardImage" class="modal-image" src="" alt="Power BI Dashboard">
 
 
     </div>
-
-
-
-    <!-- ================= JAVASCRIPT ================= -->
-
     <script>
 
-        const API_URL = "https://student-management-analytics.onrender.com";
-        const token = localStorage.getItem("token");
-        const role = localStorage.getItem("role");
+        /* ================================================
+           ADMIN AUTHENTICATION
+        ================================================= */
+
+        const API_URL =
+            "https://student-management-analytics.onrender.com";
+
+        const token =
+            localStorage.getItem("token");
+
+        const role =
+            localStorage.getItem("role");
+
 
         if (
             !token ||
             !role ||
             role.toLowerCase() !== "admin"
         ) {
-            alert("Unauthorized access. Please log in as an admin.");
+
+            alert(
+                "Unauthorized access. Please log in as an admin."
+            );
+
             localStorage.clear();
-            window.location.href = "index.html";
-            return;
+
+            window.location.href =
+                "index.html";
+
         }
+
 
         const authHeaders = {
             "Authorization": `Bearer ${token}`
         };
+
 
         /* ================================================
            OPEN DASHBOARD FULL SCREEN
@@ -790,18 +773,18 @@
                 );
 
 
-            image.src = imageSource;
+            image.src =
+                imageSource;
 
 
-            modal.style.display = "flex";
+            modal.style.display =
+                "flex";
 
 
-            // Prevent background scrolling
-
-            document.body.style.overflow = "hidden";
+            document.body.style.overflow =
+                "hidden";
 
         }
-
 
 
         /* ================================================
@@ -816,13 +799,14 @@
                 );
 
 
-            modal.style.display = "none";
+            modal.style.display =
+                "none";
 
 
-            document.body.style.overflow = "auto";
+            document.body.style.overflow =
+                "auto";
 
         }
-
 
 
         /* ================================================
@@ -841,7 +825,6 @@
             }
 
         }
-
 
 
         /* ================================================
@@ -865,6 +848,7 @@
 
 
     </script>
+
 
 </body>
 

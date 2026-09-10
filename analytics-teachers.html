@@ -622,32 +622,50 @@
 
 
     </div>
-
-
-
-    <!-- ================= JAVASCRIPT ================= -->
-
     <script>
-        const API_URL = "https://student-management-analytics.onrender.com";
-        const role = localStorage.getItem("role");
-        const token = localStorage.getItem("token");
+
+        /* ================================================
+           TEACHER AUTHENTICATION
+        ================================================= */
+
+        const API_URL =
+            "https://student-management-analytics.onrender.com";
+
+        const role =
+            localStorage.getItem("role");
+
+        const token =
+            localStorage.getItem("token");
+
 
         if (
             !token ||
             !role ||
             role.toLowerCase() !== "teacher"
         ) {
-            alert("Unauthorized access. Please log in as an Teacher.");
+
+            alert(
+                "Unauthorized access. Please log in as a teacher."
+            );
+
             localStorage.clear();
-            window.location.href = "index.html";
-            return;
+
+            window.location.href =
+                "index.html";
+
         }
 
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+        const user =
+            JSON.parse(
+                localStorage.getItem("user") || "{}"
+            );
+
 
         const authHeaders = {
             "Authorization": `Bearer ${token}`
         };
+
 
         /* ================================================
            OPEN DASHBOARD FULL SCREEN
@@ -667,18 +685,18 @@
                 );
 
 
-            image.src = imageSource;
+            image.src =
+                imageSource;
 
 
-            modal.style.display = "flex";
+            modal.style.display =
+                "flex";
 
 
-            // Prevent background scrolling
-
-            document.body.style.overflow = "hidden";
+            document.body.style.overflow =
+                "hidden";
 
         }
-
 
 
         /* ================================================
@@ -693,13 +711,14 @@
                 );
 
 
-            modal.style.display = "none";
+            modal.style.display =
+                "none";
 
 
-            document.body.style.overflow = "auto";
+            document.body.style.overflow =
+                "auto";
 
         }
-
 
 
         /* ================================================
@@ -718,7 +737,6 @@
             }
 
         }
-
 
 
         /* ================================================
