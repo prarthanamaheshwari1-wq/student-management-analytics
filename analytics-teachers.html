@@ -628,6 +628,10 @@
            TEACHER AUTHENTICATION
         ================================================= */
 
+        /* ================================================
+           TEACHER AUTHENTICATION
+        ================================================ */
+
         const API_URL =
             "https://student-management-analytics.onrender.com";
 
@@ -636,8 +640,28 @@
 
         const token =
             localStorage.getItem("token");
-            
 
+
+        /* ================================================
+           TEACHER ACCESS CHECK
+        ================================================ */
+
+        if (
+            !token ||
+            !role ||
+            role.toLowerCase() !== "teacher"
+        ) {
+            alert("Unauthorized access. Please log in as a teacher.");
+
+            localStorage.clear();
+
+            window.location.href = "index.html";
+        }
+
+
+        /* ================================================
+           USER DATA
+        ================================================ */
 
         const user =
             JSON.parse(
