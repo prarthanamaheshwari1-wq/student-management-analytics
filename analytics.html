@@ -753,6 +753,11 @@
 
     <script>
 
+        const API_URL = "https://student-management-analytics.onrender.com";
+        const token = localStorage.getItem("token");
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
 
         /* ================================================
            OPEN DASHBOARD FULL SCREEN
