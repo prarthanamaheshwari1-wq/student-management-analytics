@@ -636,24 +636,7 @@
 
         const token =
             localStorage.getItem("token");
-
-
-        if (
-            !token ||
-            !role ||
-            role.toLowerCase() !== "teacher"
-        ) {
-
-            alert(
-                "Unauthorized access. Please log in as a teacher."
-            );
-
-            localStorage.clear();
-
-            window.location.href =
-                "index.html";
-
-        }
+            
 
 
         const user =

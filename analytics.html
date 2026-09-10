@@ -732,24 +732,6 @@
             localStorage.getItem("role");
 
 
-        if (
-            !token ||
-            !role ||
-            role.toLowerCase() !== "admin"
-        ) {
-
-            alert(
-                "Unauthorized access. Please log in as an admin."
-            );
-
-            localStorage.clear();
-
-            window.location.href =
-                "index.html";
-
-        }
-
-
         const authHeaders = {
             "Authorization": `Bearer ${token}`
         };

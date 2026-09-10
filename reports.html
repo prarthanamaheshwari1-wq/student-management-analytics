@@ -485,18 +485,7 @@
         // Get JWT token from localStorage
         const token =
             localStorage.getItem("token");
-
-        if (
-            !token ||
-            !role ||
-            role.toLowerCase() !== "admin"
-        ) {
-            alert("Unauthorized access. Please log in as an admin.");
-            localStorage.clear();
-            window.location.href = "index.html";
-            return;
-        }
-
+        const role = localStorage.getItem("role");
 
 
         // Authentication headers
