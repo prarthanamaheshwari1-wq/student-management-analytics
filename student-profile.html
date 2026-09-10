@@ -341,28 +341,108 @@
 
     <!-- AI Assistant Modal -->
     <div id="ai-modal"
-        style="display: none; position: fixed; bottom: 80px; right: 20px; width: 320px; background: #1e1e2d; color: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); padding: 15px; z-index: 1000; font-family: sans-serif;">
+        style="display: none; position: fixed; bottom: 80px; right: 20px; width: 340px; background: #1e1e2d; color: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); padding: 15px; z-index: 1000; font-family: sans-serif;">
+
+        <!-- Header -->
         <div
             style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 8px;">
-            <h3 style="margin: 0; font-size: 15px;">Gemini Academic Assistant</h3>
+
+            <h3 style="margin: 0; font-size: 15px;">
+                Gemini Academic Assistant
+            </h3>
+
             <button onclick="toggleAIChat()"
-                style="background: none; border: none; color: white; font-weight: bold; cursor: pointer;">✕</button>
+                style="background: none; border: none; color: white; font-weight: bold; cursor: pointer;">
+                ✕
+            </button>
+
         </div>
 
-        <div id="chat-box" style="height: 220px; overflow-y: auto; margin: 10px 0; font-size: 13px;">
-            <p style="color: #aaa; font-style: italic;">Hello! 👋 I am your AI Academic Assistant.
-                <br>
-                <br>
-                Ask me about study plans, attendance, exams, marks, or career guidance.
+        <!-- AI Mode Buttons -->
+        <div style="display: flex; gap: 6px; margin-top: 10px;">
+
+            <button id="ai-chat-mode" onclick="showAIChatMode()"
+                style="flex: 1; background: #4285F4; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                🤖 Ask AI
+            </button>
+
+            <button id="study-plan-mode" onclick="showStudyPlannerMode()"
+                style="flex: 1; background: #444; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                📚 Study Planner
+            </button>
+
+        </div>
+
+        <!-- Chat Mode -->
+        <div id="ai-chat-section">
+
+            <div id="chat-box" style="height: 220px; overflow-y: auto; margin: 10px 0; font-size: 13px;">
+
+                <p style="color: #aaa; font-style: italic;">
+                    Hello! 👋 I am your AI Academic Assistant.
+                    <br>
+                    <br>
+                    Ask me about study plans, attendance, exams, marks, or career guidance.
+                </p>
+
+            </div>
+
+            <div style="display: flex; gap: 5px;">
+
+                <input type="text" id="user-input" placeholder="Ask something..."
+                    style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #444; background: #2b2b3d; color: white; outline: none;">
+
+                <button onclick="sendToGemini()"
+                    style="background: #34A853; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                    Send
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- Study Planner Mode -->
+        <div id="study-planner-section" style="display: none;">
+
+            <p style="color: #ccc; font-size: 13px; margin: 12px 0;">
+                📚 Create a personalized study plan using your marks,
+                attendance, and subject performance.
             </p>
+
+            <label style="font-size: 13px; color: #ddd;">
+                Study plan duration
+            </label>
+
+            <select id="study-plan-days"
+                style="width: 100%; margin-top: 6px; padding: 9px; border-radius: 6px; border: 1px solid #444; background: #2b2b3d; color: white; outline: none;">
+
+                <option value="1">1 Day</option>
+                <option value="3">3 Days</option>
+                <option value="5">5 Days</option>
+                <option value="7" selected>7 Days</option>
+                <option value="10">10 Days</option>
+                <option value="14">14 Days</option>
+                <option value="21">21 Days</option>
+                <option value="30">30 Days</option>
+
+            </select>
+
+            <button onclick="generateStudyPlan()"
+                style="width: 100%; margin-top: 10px; background: #34A853; color: white; border: none; padding: 9px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                ✨ Generate Study Plan
+            </button>
+
+            <div id="study-plan-result"
+                style="height: 220px; overflow-y: auto; margin-top: 10px; font-size: 13px; color: #eee; line-height: 1.5;">
+
+                <p style="color: #aaa; font-style: italic;">
+                    Your personalized study plan will appear here.
+                </p>
+
+            </div>
+
         </div>
 
-        <div style="display: flex; gap: 5px;">
-            <input type="text" id="user-input" placeholder="Ask something..."
-                style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #444; background: #2b2b3d; color: white; outline: none;">
-            <button onclick="sendToGemini()"
-                style="background: #34A853; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">Send</button>
-        </div>
     </div>
 
     <script src="ai-assistant.js"></script>

@@ -417,6 +417,349 @@ ${question}
         });
     }
 });
+app.post("/ai-study-plan", auth(["student"]), async (req, res) => {
+    try {
+        const { days } = req.body;
+        const studentId = req.user.id;
+        const numberOfDays = Number(days);
+        if (
+            !numberOfDays ||
+            numberOfDays < 1 ||
+            numberOfDays > 30
+        ) {
+            return res.status(400).json({
+                error: "Study plan duration must be between 1 and 30 days."
+            });
+        }
+        if (!studentId) {
+            return res.status(400).json({
+                error: "Student ID is required"
+            });
+        }
+        const GEMINI_API_KEY =
+            process.env.GEMINI_API_KEY;
+        if (!GEMINI_API_KEY) {
+            return res.status(500).json({
+                error:
+                    "Gemini API key is not configured on the server"
+            });
+        }
+        const pool = await poolPromise;
+        const studentResult =
+            await pool
+                .request()
+                .input(
+                    "Student_id",
+                    sql.Int,
+                    Number(studentId)
+                )
+                .query(`
+                    SELECT
+                        Student_id,
+                        Roll_No,
+                        First_Name,
+                        Last_Name,
+                        Class,
+                        Section
+                    FROM Student
+                    WHERE Student_id = @Student_id
+                `);
+        if (
+            studentResult.recordset.length === 0
+        ) {
+            return res.status(404).json({
+                error: "Student not found"
+            });
+        }
+        const student =
+            studentResult.recordset[0];
+        const attendanceResult =
+            await pool
+                .request()
+                .input(
+                    "Student_id",
+                    sql.Int,
+                    Number(studentId)
+                )
+                .query(`
+                    SELECT
+                        Attendence_Date,
+                        Status
+                    FROM Attendence
+                    WHERE Student_id = @Student_id
+                    ORDER BY Attendence_Date
+                `);
+        const attendanceRecords =
+            attendanceResult.recordset;
+        const workingDaysResult =
+            await pool
+                .request()
+                .query(`
+                    SELECT
+                        COUNT(
+                            DISTINCT Attendence_Date
+                        ) AS TotalWorkingDays
+                    FROM Attendence
+                `);
+        const totalWorkingDays =
+            Number(
+                workingDaysResult
+                    .recordset[0]
+                    ?.TotalWorkingDays
+            ) || 0;
+        const daysPresent =
+            attendanceRecords.filter(
+                record =>
+                    record.Status &&
+                    record.Status
+                        .toLowerCase() === "present"
+            ).length;
+        const attendancePercentage =
+            totalWorkingDays > 0
+                ? (
+                    daysPresent /
+                    totalWorkingDays
+                ) * 100
+                : 0;
+        const marksResult =
+            await pool
+                .request()
+                .input(
+                    "Student_id",
+                    sql.Int,
+                    Number(studentId)
+                )
+                .query(`
+                    SELECT
+                        Subject,
+                        Marks,
+                        Exam_Type
+                    FROM Marks
+                    WHERE Student_id = @Student_id
+                    ORDER BY Subject, Exam_Type
+                `);
+        const marksRecords =
+            marksResult.recordset;
+        const subjectPerformance = {};
+        marksRecords.forEach(record => {
+            const subject =
+                record.Subject;
+            const marks =
+                Number(record.Marks || 0);
+            if (!subjectPerformance[subject]) {
+                subjectPerformance[subject] = {
+                    total: 0,
+                    count: 0
+                };
+            }
+            subjectPerformance[subject].total +=
+                marks;
+            subjectPerformance[subject].count +=
+                1;
+        });
+        const subjectAverages =
+            Object.entries(
+                subjectPerformance
+            ).map(
+                ([subject, data]) => ({
+                    subject,
+                    averageMarks:
+                        Number(
+                            (
+                                data.total /
+                                data.count
+                            ).toFixed(2)
+                        )
+                })
+            );
+        const totalMarks =
+            marksRecords.reduce(
+                (sum, record) =>
+                    sum +
+                    Number(record.Marks || 0),
+                0
+            );
+        const averageMarks =
+            marksRecords.length > 0
+                ? (
+                    totalMarks /
+                    marksRecords.length
+                ).toFixed(2)
+                : "0.00";
+        const academicData = {
+            student: {
+                name:
+                    `${student.First_Name} ${student.Last_Name}`,
+                rollNo:
+                    student.Roll_No,
+                class:
+                    student.Class,
+                section:
+                    student.Section
+            },
+            attendance: {
+                totalWorkingDays,
+                daysPresent,
+                percentage:
+                    `${attendancePercentage.toFixed(2)}%`
+            },
+            averageMarks,
+            subjectAverages,
+            marks:
+                marksRecords
+        };
+        const model =
+            "gemini-3.7-flash";
+        let response;
+        let data;
+        for (
+            let attempt = 1;
+            attempt <= 3;
+            attempt++
+        ) {
+            response =
+                await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body:
+                            JSON.stringify({
+                                contents: [
+                                    {
+                                        parts: [
+                                            {
+                                                text: `
+You are an AI Personalized Study Planner
+inside a Student Management System built
+under UN SDG 4 (Quality Education).
+Create a personalized study plan for the
+currently logged-in student using ONLY
+the academic data provided below.
+Student Academic Data:
+${JSON.stringify(
+    academicData,
+    null,
+    2
+)}
+Study Plan Duration:
+${numberOfDays} days
+Your task:
+1. Analyze the student's subject-wise performance.
+2. Identify weaker subjects based ONLY on the
+   provided marks.
+3. Give more study priority to weaker subjects.
+4. Include revision for stronger subjects.
+5. Consider the student's attendance when
+   suggesting academic priorities.
+6. Create a practical day-by-day study plan.
+7. Include revision and practice.
+8. Keep the workload realistic.
+9. Do not invent subjects or marks.
+10. Do not invent attendance requirements.
+11. Use the student's actual subject names.
+12. Explain briefly why certain subjects receive
+    more attention.
+Return the plan in this structure:
+STUDY PLAN
+Student: [student name]
+Duration: [number of days]
+Academic Focus:
+- Strong subjects
+- Subjects needing improvement
+- Attendance consideration
+Day 1:
+- Subject:
+- Topics/Focus:
+- Practice:
+- Revision:
+Day 2:
+- Subject:
+- Topics/Focus:
+- Practice:
+- Revision:
+Continue until Day ${numberOfDays}.
+At the end provide:
+FINAL TIPS
+- 3 to 5 concise personalized tips.
+Use clear, student-friendly language.
+Do not claim that a specific attendance
+percentage is mandatory unless that rule
+exists in the provided data.
+Do not invent information.
+`
+                                            }
+                                        ]
+                                    }
+                                ]
+                            })
+                    }
+                );
+            data =
+                await response.json();
+            if (response.ok) {
+                break;
+            }
+            console.error(
+                `Gemini Study Planner attempt ${attempt} failed:`,
+                data.error?.message ||
+                data
+            );
+            if (
+                (
+                    response.status === 429 ||
+                    response.status === 503
+                ) &&
+                attempt < 3
+            ) {
+                const delay =
+                    attempt * 3000;
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            delay
+                        )
+                );
+                continue;
+            }
+            break;
+        }
+        if (!response.ok) {
+            return res
+                .status(response.status)
+                .json({
+                    error:
+                        data.error?.message ||
+                        "Gemini Study Planner request failed. Please try again later."
+                });
+        }
+        const studyPlan =
+            data
+                .candidates?.[0]
+                ?.content?.parts?.[0]
+                ?.text ||
+            "Sorry, I couldn't generate a study plan.";
+        res.json({
+            success: true,
+            studyPlan
+        });
+    } catch (error) {
+        console.error(
+            "AI Study Planner Error:",
+            error
+        );
+        res.status(500).json({
+            error:
+                "Unable to generate study plan",
+            details:
+                error.message
+        });
+    }
+});
 app.put("/students/:id", auth(["admin"]), async (req, res) => {
     try {
         const studentId = parseInt(req.params.id, 10);
