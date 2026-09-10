@@ -446,6 +446,18 @@
         // Get authentication details
         const role = localStorage.getItem("role");
         const token = localStorage.getItem("token");
+
+        if (
+            !token ||
+            !role ||
+            role.toLowerCase() !== "teacher"
+        ) {
+            alert("Unauthorized access. Please log in as an Teacher.");
+            localStorage.clear();
+            window.location.href = "index.html";
+            return;
+        }
+
         const user = JSON.parse(localStorage.getItem("user") || "{}");
 
         // Authentication headers
