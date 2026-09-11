@@ -8,6 +8,16 @@ The project combines **Web Development, SQL Database Management, Data Analytics,
 
 ---
 
+## 🎯 Project Objective
+
+Educational institutions manage large amounts of student information such as attendance, academic performance, fees, and personal records. Managing these records across different systems can make it difficult to monitor student progress and generate meaningful insights.
+
+The objective of this project is to provide a centralized platform where academic records can be managed efficiently while giving students, teachers, and administrators access to role-specific features and analytics.
+
+The system also includes an AI Academic Assistant to provide students with personalized academic guidance based on their academic information.
+
+---
+
 ## ✨ Key Features
 
 ### 👨‍🎓 Student Portal
@@ -21,7 +31,7 @@ The project combines **Web Development, SQL Database Management, Data Analytics,
 
 ### 👨‍🏫 Teacher Portal
 
-* Teacher login
+* Secure teacher login
 * View student records
 * Manage attendance
 * Enter and update student marks
@@ -30,43 +40,52 @@ The project combines **Web Development, SQL Database Management, Data Analytics,
 
 ### 👨‍💼 Admin Portal
 
-* Role-based administrator login
+* Secure administrator login
 * Add, edit, and manage students
 * Add, edit, and manage teachers
 * Manage academic records
 * Manage fees
 * Access institutional analytics
 
-### 🤖 AI Academic Assistant
+---
 
-The system includes a **Gemini-powered AI Academic Assistant** that can use the currently logged-in student's academic data to provide personalized guidance.
+## 🤖 AI Academic Assistant
 
-It can analyze:
+The system includes a **Gemini-powered AI Academic Assistant** designed specifically for students.
+
+The assistant can use the logged-in student's academic information to provide personalized guidance related to:
 
 * Attendance percentage
 * Days present and absent
 * Subject-wise marks
 * Average marks
 * Academic strengths
-* Areas where the student can improve
-* Study and examination preparation strategies
+* Areas for improvement
+* Study strategies
+* Examination preparation
 
-### 📊 Analytics Dashboard
+This feature uses **Generative AI** to help students better understand their academic performance and make informed study decisions.
 
-The project includes a **Power BI analytics dashboard** with dedicated analytics for:
+---
+
+## 📊 Analytics Dashboard
+
+The project includes **Power BI dashboards** that transform academic records into meaningful insights.
+
+The analytics section includes:
 
 * Institution Overview
 * Attendance Analytics
 * Fees Analytics
 * Marks Analytics
 
-These dashboards help transform academic records into meaningful insights for monitoring student performance and institutional trends.
+These dashboards help monitor student performance, attendance trends, fee status, and institutional academic information.
 
 ---
 
 ## 🎯 UN SDG 4 – Quality Education
 
-This project supports **UN Sustainable Development Goal 4 (Quality Education)** by helping educational institutions monitor academic performance, attendance, fees, and student progress while providing students with personalized AI-based academic guidance.
+This project supports **UN Sustainable Development Goal 4 (Quality Education)** by helping educational institutions manage academic information, monitor student performance, analyze attendance and fees, and provide students with personalized AI-based academic guidance.
 
 The goal is to make academic information easier to manage, understand, and use for better educational outcomes.
 
@@ -87,26 +106,34 @@ The goal is to make academic information easier to manage, understand, and use f
 
 ### Database
 
-* SQL Server Management Studio 22
+* Microsoft SQL Server
 
 ### Analytics
 
-* Power BI
+* Microsoft Power BI
 
 ### Artificial Intelligence
 
 * Google Gemini API
 
-### Version Control
+### Authentication & Security
+
+* JSON Web Token (JWT)
+* Role-based authentication
+* Environment variables using `.env`
+
+### Version Control & Deployment
 
 * Git
 * GitHub
+* GitHub Pages
+* Render
 
 ---
 
 ## 🗄️ Database Tables
 
-The system uses a relational database with the following core tables:
+The system uses a relational SQL Server database with the following core tables:
 
 * Student
 * Teacher
@@ -121,25 +148,33 @@ The system uses a relational database with the following core tables:
 
 ### Frontend
 
-* GitHub Pages
+The frontend is deployed using **GitHub Pages**.
+
+**Live Website:**
+https://prarthanamaheshwari1-wq.github.io/student-management-analytics/
 
 ### Backend
 
-* Render
+The Node.js/Express backend is deployed using **Render**.
+
+**Backend Service:**
+https://student-management-analytics-1.onrender.com
 
 ### Database
 
-* SQL Server Management Studio 22
+The application uses **Microsoft SQL Server** for relational data storage and management.
 
 ---
 
 ## 🔐 Security Features
 
-* Role-based authentication
+* JWT-based authentication
+* Role-based authorization
 * Separate Student, Teacher, and Admin access
+* Protected API routes
 * Environment variable protection using `.env`
-* Secure API communication
-* Protected academic records
+* Sensitive configuration excluded from GitHub using `.gitignore`
+* Authenticated access to academic data
 
 ---
 
@@ -161,7 +196,7 @@ The system uses a relational database with the following core tables:
 
 ### 👨‍🎓 Demo Student Account
 
-**Username:** `101`
+**Username:** `102`
 
 **Password:** `student@123`
 
@@ -175,13 +210,24 @@ The system uses a relational database with the following core tables:
 * Monitor attendance percentage
 * Use the AI Academic Assistant for personalized academic guidance
 
-> **Note:** These demo accounts are provided for project evaluation and demonstration purposes. Administrative functions are restricted to authorized users.
+> **Note:** These demo accounts are provided for project evaluation and demonstration purposes. Administrative functions remain restricted to authorized users.
+
+---
+
+## 🌟 Project Highlights
+
+* Full-stack academic management platform
+* Role-based Student, Teacher, and Admin portals
+* SQL Server database integration
+* JWT authentication and protected APIs
+* AI-powered academic assistance using Google Gemini
+* Interactive Power BI analytics
+* Attendance, marks, and fee management
+* Deployed frontend and backend
+* Education-focused solution aligned with **UN SDG 4**
 
 ---
 
 ## 👩‍💻 Contributor
 
 **Prarthana Maheshwari**
-
----
-
