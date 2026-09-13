@@ -124,7 +124,9 @@ These dashboards help monitor student performance, attendance trends, fee status
 ### 🤖 AI Academic Assistant
 
 ![AI Academic Assistant](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/ask%20ai.png)
-and ai study planner
+
+### 🤖 AI Academic Study Planner
+
 ![AI Academic Study Planner](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/study%20planner.png)
 
 ---
