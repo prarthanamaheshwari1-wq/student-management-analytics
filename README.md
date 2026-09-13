@@ -83,6 +83,52 @@ These dashboards help monitor student performance, attendance trends, fee status
 
 ---
 
+## 📸 Project Screenshots
+
+### 🔐 Login Page
+
+![Login Page](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/sms%20login.png)
+
+### 📊 Admin Dashboard
+
+![Admin Dashboard](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/Admin%20Dashboard.png)
+
+### 👨‍🎓 Student Management
+
+![Student Management](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/Admin%20Students.png)
+
+### 👨‍🏫 Teacher Management
+
+![Teacher Management](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/Admin%20Teachers.png)
+
+### 📅 Attendance Management
+
+![Attendance Management](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/Admin%20Attendance.png)
+
+### 📝 Marks Management
+
+![Marks Management](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/Admin%20Marks.png)
+
+### 💰 Fees Management
+
+![Fees Management](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/Admin%20Fees.png)
+
+### 📑 Reports
+
+![Reports](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/Admin%20Reports.png)
+
+### 📈 Analytics
+
+![Analytics](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/Admin%20Analytics.png)
+
+### 🤖 AI Academic Assistant
+
+![AI Academic Assistant](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/ask%20ai.png)
+and ai study planner
+![AI Academic Study Planner](https://github.com/prarthanamaheshwari1-wq/student-management-analytics/blob/main/study%20planner.png)
+
+---
+
 ## 🎯 UN SDG 4 – Quality Education
 
 This project supports **UN Sustainable Development Goal 4 (Quality Education)** by helping educational institutions manage academic information, monitor student performance, analyze attendance and fees, and provide students with personalized AI-based academic guidance.
