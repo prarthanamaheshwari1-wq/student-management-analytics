@@ -201,7 +201,6 @@ app.post("/students/:id/photo", auth(["student"]), upload.single("photo"), async
             });
         }
 
-        // Student can only upload their own photo
         if (Number(req.user.id) !== studentId) {
             return res.status(403).json({
                 message: "You can only upload your own profile photo."
@@ -219,9 +218,12 @@ app.post("/students/:id/photo", auth(["student"]), upload.single("photo"), async
         await pool.request()
             .input("Student_id", sql.Int, studentId)
             .input("Profile_Photo", sql.VarBinary(sql.MAX), req.file.buffer)
+            .input("Profile_Photo_Type", sql.NVarChar(50), req.file.mimetype)
             .query(`
                 UPDATE Student
-                SET Profile_Photo = @Profile_Photo
+                SET
+                    Profile_Photo = @Profile_Photo,
+                    Profile_Photo_Type = @Profile_Photo_Type
                 WHERE Student_id = @Student_id
             `);
 
@@ -241,39 +243,35 @@ app.post("/students/:id/photo", auth(["student"]), upload.single("photo"), async
 app.get("/students/:id/photo", auth(["admin", "teacher", "student"]), async (req, res) => {
     try {
         const studentId = parseInt(req.params.id);
-
         if (isNaN(studentId)) {
             return res.status(400).send("Invalid student ID.");
         }
-
-        // Student can only view their own photo
         if (
             req.user.role === "student" &&
             Number(req.user.id) !== studentId
         ) {
             return res.status(403).send("Access denied.");
         }
-
         const pool = await poolPromise;
-
         const result = await pool.request()
             .input("Student_id", sql.Int, studentId)
             .query(`
-                SELECT Profile_Photo
+                SELECT Profile_Photo, Profile_Photo_Type
                 FROM Student
                 WHERE Student_id = @Student_id
             `);
-
         if (
             result.recordset.length === 0 ||
             !result.recordset[0].Profile_Photo
         ) {
             return res.status(404).send("No profile photo found.");
         }
-
-        res.set("Content-Type", "image/jpeg");
-        res.send(result.recordset[0].Profile_Photo);
-
+        const photo = result.recordset[0].Profile_Photo;
+        const photoType =
+            result.recordset[0].Profile_Photo_Type || "image/jpeg";
+        res.set("Content-Type", photoType);
+        res.set("Cache-Control", "no-cache");
+        res.send(photo);
     } catch (error) {
         console.error("Profile photo fetch error:", error);
         res.status(500).send("Failed to load profile photo.");
