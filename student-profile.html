@@ -1,421 +1,416 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Profile - Student Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
 
-```
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: Arial, sans-serif;
-    }
+        body {
+            background: #f4f6f9;
+            color: #333;
+        }
 
-    body {
-        background: #f4f6f9;
-        color: #333;
-    }
-
-    /* Sidebar */
-    .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        width: 240px;
-        height: 100vh;
-        background: #1e293b;
-        color: white;
-        padding-top: 20px;
-    }
-
-    .sidebar h2 {
-        text-align: center;
-        margin-bottom: 30px;
-        font-size: 22px;
-    }
-
-    .sidebar a {
-        display: block;
-        padding: 14px 25px;
-        color: white;
-        text-decoration: none;
-        font-size: 15px;
-    }
-
-    .sidebar a:hover,
-    .sidebar a.active {
-        background: #334155;
-    }
-
-    /* Main Content */
-    .main {
-        margin-left: 240px;
-        padding: 30px;
-    }
-
-    .topbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-    }
-
-    .topbar h1 {
-        font-size: 28px;
-    }
-
-    .logout-btn {
-        background: #dc2626;
-        color: white;
-        border: none;
-        padding: 10px 18px;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-
-    .logout-btn:hover {
-        background: #b91c1c;
-    }
-
-    /* Profile Grid Layout */
-    .profile-container {
-        display: grid;
-        grid-template-columns: 280px 1fr;
-        gap: 25px;
-    }
-
-    .profile-left,
-    .profile-right {
-        background: white;
-        border-radius: 10px;
-        padding: 25px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    }
-
-    .profile-left {
-        text-align: center;
-    }
-
-    /* Profile Image */
-    .profile-image {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        background: #e2e8f0;
-        margin: 0 auto 15px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 45px;
-        color: #64748b;
-        overflow: hidden;
-        border: 4px solid #e2e8f0;
-    }
-
-    .profile-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    /* Photo Upload */
-    .photo-upload {
-        margin-top: 15px;
-    }
-
-    .photo-upload input {
-        display: none;
-    }
-
-    .upload-btn {
-        display: inline-block;
-        background: #2563eb;
-        color: white;
-        padding: 8px 14px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: bold;
-    }
-
-    .upload-btn:hover {
-        background: #1d4ed8;
-    }
-
-    .photo-status {
-        margin-top: 8px;
-        font-size: 12px;
-        color: #64748b;
-    }
-
-    .profile-left h2 {
-        margin-bottom: 8px;
-    }
-
-    .profile-left p {
-        color: #64748b;
-        margin-bottom: 5px;
-    }
-
-    .status {
-        display: inline-block;
-        margin-top: 15px;
-        padding: 7px 18px;
-        border-radius: 20px;
-        background: #dcfce7;
-        color: #166534;
-        font-size: 14px;
-        font-weight: bold;
-    }
-
-    .profile-right h2 {
-        margin-bottom: 20px;
-        border-bottom: 1px solid #e5e7eb;
-        padding-bottom: 12px;
-    }
-
-    .details-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-
-    .detail {
-        background: #f8fafc;
-        padding: 15px;
-        border-radius: 7px;
-    }
-
-    .detail label {
-        display: block;
-        font-size: 13px;
-        color: #64748b;
-        margin-bottom: 6px;
-    }
-
-    .detail span {
-        font-size: 15px;
-        font-weight: 500;
-    }
-
-    .loading {
-        text-align: center;
-        padding: 30px;
-        color: #64748b;
-    }
-
-    .error {
-        color: #dc2626;
-        text-align: center;
-        padding: 20px;
-    }
-
-    /* Responsive Breakpoints */
-    @media (max-width: 800px) {
+        /* Sidebar */
         .sidebar {
-            width: 200px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #1e293b;
+            color: white;
+            padding-top: 20px;
         }
 
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 22px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 14px 25px;
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #334155;
+        }
+
+        /* Main Content */
         .main {
-            margin-left: 200px;
+            margin-left: 240px;
+            padding: 30px;
         }
 
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .topbar h1 {
+            font-size: 28px;
+        }
+
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        /* Profile Grid Layout */
         .profile-container {
-            grid-template-columns: 1fr;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 25px;
+        }
+
+        .profile-left,
+        .profile-right {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .profile-left {
+            text-align: center;
+        }
+
+        /* Profile Image */
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            margin: 0 auto 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 45px;
+            color: #64748b;
+            overflow: hidden;
+            border: 4px solid #e2e8f0;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Photo Upload */
+        .photo-upload {
+            margin-top: 15px;
+        }
+
+        .photo-upload input {
+            display: none;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .upload-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .photo-status {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .profile-left h2 {
+            margin-bottom: 8px;
+        }
+
+        .profile-left p {
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 7px 18px;
+            border-radius: 20px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .profile-right h2 {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 12px;
         }
 
         .details-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 600px) {
-        .sidebar {
-            position: relative;
-            width: 100%;
-            height: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        .main {
-            margin-left: 0;
+        .detail {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 7px;
         }
-    }
-</style>
-```
+
+        .detail label {
+            display: block;
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .detail span {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+        }
+
+        .error {
+            color: #dc2626;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 800px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .main {
+                margin-left: 200px;
+            }
+
+            .profile-container {
+                grid-template-columns: 1fr;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+        }
+    </style>
 
 </head>
 
 <body>
 
-```
-<!-- Sidebar -->
-<div class="sidebar">
-    <h2>SMS</h2>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>SMS</h2>
 
-    <a href="student-dashboard.html">Dashboard</a>
-    <a href="student-profile.html" class="active">My Profile</a>
-    <a href="student-attendance.html">Attendance</a>
-    <a href="student-marks.html">Marks & Reports</a>
-    <a href="student-fees.html">Fees</a>
-</div>
-
-<!-- Main Content -->
-<div class="main">
-
-    <div class="topbar">
-        <h1>My Profile</h1>
-
-        <button class="logout-btn" onclick="logout()">
-            Logout
-        </button>
+        <a href="student-dashboard.html">Dashboard</a>
+        <a href="student-profile.html" class="active">My Profile</a>
+        <a href="student-attendance.html">Attendance</a>
+        <a href="student-marks.html">Marks & Reports</a>
+        <a href="student-fees.html">Fees</a>
     </div>
 
-    <div id="profileContent">
-        <div class="loading">
-            Loading student profile...
+    <!-- Main Content -->
+    <div class="main">
+
+        <div class="topbar">
+            <h1>My Profile</h1>
+
+            <button class="logout-btn" onclick="logout()">
+                Logout
+            </button>
         </div>
+
+        <div id="profileContent">
+            <div class="loading">
+                Loading student profile...
+            </div>
+        </div>
+
     </div>
 
-</div>
+    <script>
 
-<script>
+        const API_URL = "https://student-management-analytics.onrender.com";
 
-    const API_URL = "https://student-management-analytics-1.onrender.com";
+        // Safely retrieve user data saved during login
+        const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const token = localStorage.getItem("token");
 
-    // Safely retrieve user data saved during login
-    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const token = localStorage.getItem("token");
+        // Student ID
+        const studentId =
+            localStorage.getItem("studentId") ||
+            storedUser.Student_id ||
+            storedUser.student_id;
 
-    // Student ID
-    const studentId =
-        localStorage.getItem("studentId") ||
-        storedUser.Student_id ||
-        storedUser.student_id;
-
-    // Authorization header
-    const authHeaders = {
-        "Authorization": `Bearer ${token}`
-    };
+        // Authorization header
+        const authHeaders = {
+            "Authorization": `Bearer ${token}`
+        };
 
 
-    /* =========================================================
-       LOAD STUDENT PROFILE
-    ========================================================= */
+        /* =========================================================
+           LOAD STUDENT PROFILE
+        ========================================================= */
 
-    async function loadStudentProfile() {
+        async function loadStudentProfile() {
 
-        // Check active login session
-        if (
-            !studentId ||
-            !token ||
-            studentId === "undefined" ||
-            studentId === "null"
-        ) {
-            alert("No active session found. Please log in.");
-            window.location.href = "index.html";
-            return;
-        }
-
-        try {
-
-            // Fetch student profile
-            const response = await fetch(
-                `${API_URL}/students/${studentId}`,
-                {
-                    headers: authHeaders
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(
-                    `Student ID #${studentId} not found in database.`
-                );
+            // Check active login session
+            if (
+                !studentId ||
+                !token ||
+                studentId === "undefined" ||
+                studentId === "null"
+            ) {
+                alert("No active session found. Please log in.");
+                window.location.href = "index.html";
+                return;
             }
 
-            const student = await response.json();
+            try {
+
+                // Fetch student profile
+                const response = await fetch(
+                    `${API_URL}/students/${studentId}`,
+                    {
+                        headers: authHeaders
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Student ID #${studentId} not found in database.`
+                    );
+                }
+
+                const student = await response.json();
 
 
-            // Map database fields
-            const firstName =
-                student.First_Name ||
-                student.first_name ||
-                student.FirstName ||
-                "N/A";
+                // Map database fields
+                const firstName =
+                    student.First_Name ||
+                    student.first_name ||
+                    student.FirstName ||
+                    "N/A";
 
-            const lastName =
-                student.Last_Name ||
-                student.last_name ||
-                student.LastName ||
-                "";
+                const lastName =
+                    student.Last_Name ||
+                    student.last_name ||
+                    student.LastName ||
+                    "";
 
-            const rollNo =
-                student.Roll_No ||
-                student.roll_no ||
-                student.RollNo ||
-                "N/A";
+                const rollNo =
+                    student.Roll_No ||
+                    student.roll_no ||
+                    student.RollNo ||
+                    "N/A";
 
-            const displayId =
-                student.Student_id ||
-                student.student_id ||
-                studentId;
+                const displayId =
+                    student.Student_id ||
+                    student.student_id ||
+                    studentId;
 
-            const className =
-                student.Class ||
-                student.class ||
-                "N/A";
+                const className =
+                    student.Class ||
+                    student.class ||
+                    "N/A";
 
-            const section =
-                student.Section ||
-                student.section ||
-                "N/A";
+                const section =
+                    student.Section ||
+                    student.section ||
+                    "N/A";
 
-            const gender =
-                student.Gender ||
-                student.gender ||
-                "N/A";
+                const gender =
+                    student.Gender ||
+                    student.gender ||
+                    "N/A";
 
-            const dob =
-                (student.DOB || student.dob)
-                    ? new Date(
-                        student.DOB || student.dob
-                    ).toLocaleDateString("en-GB")
-                    : "N/A";
+                const dob =
+                    (student.DOB || student.dob)
+                        ? new Date(
+                            student.DOB || student.dob
+                        ).toLocaleDateString("en-GB")
+                        : "N/A";
 
-            const phone =
-                student.Phone_No ||
-                student.phone_no ||
-                student.phone ||
-                "N/A";
+                const phone =
+                    student.Phone_No ||
+                    student.phone_no ||
+                    student.phone ||
+                    "N/A";
 
-            const email =
-                student.Email ||
-                student.email ||
-                "N/A";
+                const email =
+                    student.Email ||
+                    student.email ||
+                    "N/A";
 
-            const admissionDate =
-                (student.Admission_Date || student.admission_date)
-                    ? new Date(
-                        student.Admission_Date ||
-                        student.admission_date
-                    ).toLocaleDateString("en-GB")
-                    : "N/A";
+                const admissionDate =
+                    (student.Admission_Date || student.admission_date)
+                        ? new Date(
+                            student.Admission_Date ||
+                            student.admission_date
+                        ).toLocaleDateString("en-GB")
+                        : "N/A";
 
-            const address =
-                student.Address ||
-                student.address ||
-                "N/A";
+                const address =
+                    student.Address ||
+                    student.address ||
+                    "N/A";
 
 
-            /* =====================================================
-               RENDER PROFILE
-            ===================================================== */
+                /* =====================================================
+                   RENDER PROFILE
+                ===================================================== */
 
-            document.getElementById("profileContent").innerHTML = `
+                document.getElementById("profileContent").innerHTML = `
 
                 <div class="profile-container">
 
@@ -553,49 +548,49 @@
             `;
 
 
-            /* =====================================================
-               LOAD EXISTING PROFILE PHOTO
-            ===================================================== */
+                /* =====================================================
+                   LOAD EXISTING PROFILE PHOTO
+                ===================================================== */
 
-            const profileImageContainer =
-                document.getElementById(
-                    "profileImageContainer"
-                );
-
-            if (profileImageContainer) {
-
-                const photoUrl =
-                    `${API_URL}/students/${studentId}/photo?t=${Date.now()}`;
-
-                const photoResponse =
-                    await fetch(
-                        photoUrl,
-                        {
-                            headers: authHeaders
-                        }
+                const profileImageContainer =
+                    document.getElementById(
+                        "profileImageContainer"
                     );
 
-                if (photoResponse.ok) {
+                if (profileImageContainer) {
 
-                    profileImageContainer.innerHTML = `
+                    const photoUrl =
+                        `${API_URL}/students/${studentId}/photo?t=${Date.now()}`;
+
+                    const photoResponse =
+                        await fetch(
+                            photoUrl,
+                            {
+                                headers: authHeaders
+                            }
+                        );
+
+                    if (photoResponse.ok) {
+
+                        profileImageContainer.innerHTML = `
                         <img
                             src="${photoUrl}"
                             alt="Student Profile Photo"
                         >
                     `;
+                    }
                 }
-            }
 
-        } catch (error) {
+            } catch (error) {
 
-            console.error(
-                "Error loading profile:",
-                error
-            );
+                console.error(
+                    "Error loading profile:",
+                    error
+                );
 
-            document.getElementById(
-                "profileContent"
-            ).innerHTML = `
+                document.getElementById(
+                    "profileContent"
+                ).innerHTML = `
 
                 <div class="error">
 
@@ -609,122 +604,122 @@
 
                 </div>
             `;
-        }
-    }
-
-
-    /* =========================================================
-       UPLOAD PROFILE PHOTO
-    ========================================================= */
-
-    async function uploadProfilePhoto(event) {
-
-        const file = event.target.files[0];
-
-        if (!file) {
-            return;
+            }
         }
 
 
-        // Check file size
-        if (file.size > 2 * 1024 * 1024) {
+        /* =========================================================
+           UPLOAD PROFILE PHOTO
+        ========================================================= */
 
-            alert(
-                "Image size must be less than 2 MB."
-            );
+        async function uploadProfilePhoto(event) {
 
-            event.target.value = "";
+            const file = event.target.files[0];
 
-            return;
-        }
-
-
-        // Allowed image types
-        const allowedTypes = [
-            "image/jpeg",
-            "image/png",
-            "image/webp"
-        ];
-
-        if (!allowedTypes.includes(file.type)) {
-
-            alert(
-                "Only JPG, PNG and WEBP images are allowed."
-            );
-
-            event.target.value = "";
-
-            return;
-        }
-
-
-        const status =
-            document.getElementById(
-                "photoStatus"
-            );
-
-
-        try {
-
-            status.textContent =
-                "Uploading photo...";
-
-
-            // Create multipart form data
-            const formData =
-                new FormData();
-
-            formData.append(
-                "photo",
-                file
-            );
-
-
-            // Upload photo
-            const response =
-                await fetch(
-                    `${API_URL}/students/${studentId}/photo`,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Authorization":
-                                `Bearer ${token}`
-                        },
-
-                        body: formData
-                    }
-                );
-
-
-            const result =
-                await response.json();
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    result.message ||
-                    "Photo upload failed."
-                );
+            if (!file) {
+                return;
             }
 
 
-            // Success message
-            status.textContent =
-                "Photo updated successfully.";
+            // Check file size
+            if (file.size > 2 * 1024 * 1024) {
+
+                alert(
+                    "Image size must be less than 2 MB."
+                );
+
+                event.target.value = "";
+
+                return;
+            }
 
 
-            // Update image immediately
-            const imageContainer =
+            // Allowed image types
+            const allowedTypes = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+
+                alert(
+                    "Only JPG, PNG and WEBP images are allowed."
+                );
+
+                event.target.value = "";
+
+                return;
+            }
+
+
+            const status =
                 document.getElementById(
-                    "profileImageContainer"
+                    "photoStatus"
                 );
 
 
-            if (imageContainer) {
+            try {
 
-                imageContainer.innerHTML = `
+                status.textContent =
+                    "Uploading photo...";
+
+
+                // Create multipart form data
+                const formData =
+                    new FormData();
+
+                formData.append(
+                    "photo",
+                    file
+                );
+
+
+                // Upload photo
+                const response =
+                    await fetch(
+                        `${API_URL}/students/${studentId}/photo`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${token}`
+                            },
+
+                            body: formData
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.message ||
+                        "Photo upload failed."
+                    );
+                }
+
+
+                // Success message
+                status.textContent =
+                    "Photo updated successfully.";
+
+
+                // Update image immediately
+                const imageContainer =
+                    document.getElementById(
+                        "profileImageContainer"
+                    );
+
+
+                if (imageContainer) {
+
+                    imageContainer.innerHTML = `
 
                     <img
                         src="${API_URL}/students/${studentId}/photo?t=${Date.now()}"
@@ -732,58 +727,55 @@
                     >
 
                 `;
+                }
+
+
+                // Reset input
+                event.target.value = "";
+
+
+            } catch (error) {
+
+                console.error(
+                    "Photo upload error:",
+                    error
+                );
+
+                status.textContent =
+                    "Photo upload failed.";
+
+                alert(
+                    error.message ||
+                    "Unable to upload profile photo."
+                );
             }
-
-
-            // Reset input
-            event.target.value = "";
-
-
-        } catch (error) {
-
-            console.error(
-                "Photo upload error:",
-                error
-            );
-
-            status.textContent =
-                "Photo upload failed.";
-
-            alert(
-                error.message ||
-                "Unable to upload profile photo."
-            );
         }
-    }
 
 
-    /* =========================================================
-       LOGOUT
-    ========================================================= */
+        /* =========================================================
+           LOGOUT
+        ========================================================= */
 
-    function logout() {
+        function logout() {
 
-        localStorage.clear();
+            localStorage.clear();
 
-        window.location.href =
-            "index.html";
-    }
-
-
-    // Load profile when page opens
-    loadStudentProfile();
-
-</script>
+            window.location.href =
+                "index.html";
+        }
 
 
-<!-- =========================================================
+        // Load profile when page opens
+        loadStudentProfile();
+
+    </script>
+
+
+    <!-- =========================================================
      FLOATING AI BUTTON
 ========================================================= -->
 
-<button
-    id="ai-btn"
-    onclick="toggleAIChat()"
-    style="
+    <button id="ai-btn" onclick="toggleAIChat()" style="
         position: fixed;
         bottom: 20px;
         right: 20px;
@@ -796,19 +788,16 @@
         cursor: pointer;
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         z-index: 1000;
-    "
->
-    🤖 Ask AI Tutor
-</button>
+    ">
+        🤖 Ask AI Tutor
+    </button>
 
 
-<!-- =========================================================
+    <!-- =========================================================
      AI ASSISTANT MODAL
 ========================================================= -->
 
-<div
-    id="ai-modal"
-    style="
+    <div id="ai-modal" style="
         display: none;
         position: fixed;
         bottom: 80px;
@@ -821,58 +810,45 @@
         padding: 15px;
         z-index: 1000;
         font-family: sans-serif;
-    "
->
+    ">
 
-    <!-- Header -->
-    <div
-        style="
+        <!-- Header -->
+        <div style="
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #333;
             padding-bottom: 8px;
-        "
-    >
+        ">
 
-        <h3
-            style="
+            <h3 style="
                 margin: 0;
                 font-size: 15px;
-            "
-        >
-            Gemini Academic Assistant
-        </h3>
+            ">
+                Gemini Academic Assistant
+            </h3>
 
-        <button
-            onclick="toggleAIChat()"
-            style="
+            <button onclick="toggleAIChat()" style="
                 background: none;
                 border: none;
                 color: white;
                 font-weight: bold;
                 cursor: pointer;
-            "
-        >
-            ✕
-        </button>
+            ">
+                ✕
+            </button>
 
-    </div>
+        </div>
 
 
-    <!-- AI Mode Buttons -->
-    <div
-        style="
+        <!-- AI Mode Buttons -->
+        <div style="
             display: flex;
             gap: 6px;
             margin-top: 10px;
-        "
-    >
+        ">
 
-        <button
-            id="ai-chat-mode"
-            onclick="showAIChatMode()"
-            style="
+            <button id="ai-chat-mode" onclick="showAIChatMode()" style="
                 flex: 1;
                 background: #4285F4;
                 color: white;
@@ -881,15 +857,11 @@
                 border-radius: 6px;
                 cursor: pointer;
                 font-weight: bold;
-            "
-        >
-            🤖 Ask AI
-        </button>
+            ">
+                🤖 Ask AI
+            </button>
 
-        <button
-            id="study-plan-mode"
-            onclick="showStudyPlannerMode()"
-            style="
+            <button id="study-plan-mode" onclick="showStudyPlannerMode()" style="
                 flex: 1;
                 background: #444;
                 color: white;
@@ -898,55 +870,43 @@
                 border-radius: 6px;
                 cursor: pointer;
                 font-weight: bold;
-            "
-        >
-            📚 Study Planner
-        </button>
-
-    </div>
-
-
-    <!-- Chat Mode -->
-    <div id="ai-chat-section">
-
-        <div
-            id="chat-box"
-            style="
-                height: 220px;
-                overflow-y: auto;
-                margin: 10px 0;
-                font-size: 13px;
-            "
-        >
-
-            <p
-                style="
-                    color: #aaa;
-                    font-style: italic;
-                "
-            >
-                Hello! 👋 I am your AI Academic Assistant.
-                <br>
-                <br>
-                Ask me about study plans, attendance,
-                exams, marks, or career guidance.
-            </p>
+            ">
+                📚 Study Planner
+            </button>
 
         </div>
 
 
-        <div
-            style="
+        <!-- Chat Mode -->
+        <div id="ai-chat-section">
+
+            <div id="chat-box" style="
+                height: 220px;
+                overflow-y: auto;
+                margin: 10px 0;
+                font-size: 13px;
+            ">
+
+                <p style="
+                    color: #aaa;
+                    font-style: italic;
+                ">
+                    Hello! 👋 I am your AI Academic Assistant.
+                    <br>
+                    <br>
+                    Ask me about study plans, attendance,
+                    exams, marks, or career guidance.
+                </p>
+
+            </div>
+
+
+            <div style="
                 display: flex;
                 gap: 5px;
-            "
-        >
+            ">
 
-            <input
-                type="text"
-                id="user-input"
-                placeholder="Ask something..."
-                style="
+                <input type="text" id="user-input" placeholder="Ask something..." style="
                     flex: 1;
                     padding: 8px;
                     border-radius: 6px;
@@ -954,12 +914,9 @@
                     background: #2b2b3d;
                     color: white;
                     outline: none;
-                "
-            >
+                ">
 
-            <button
-                onclick="sendToGemini()"
-                style="
+                <button onclick="sendToGemini()" style="
                     background: #34A853;
                     color: white;
                     border: none;
@@ -967,47 +924,37 @@
                     border-radius: 6px;
                     cursor: pointer;
                     font-weight: bold;
-                "
-            >
-                Send
-            </button>
+                ">
+                    Send
+                </button>
+
+            </div>
 
         </div>
 
-    </div>
 
+        <!-- Study Planner Mode -->
+        <div id="study-planner-section" style="display: none;">
 
-    <!-- Study Planner Mode -->
-    <div
-        id="study-planner-section"
-        style="display: none;"
-    >
-
-        <p
-            style="
+            <p style="
                 color: #ccc;
                 font-size: 13px;
                 margin: 12px 0;
-            "
-        >
-            📚 Create a personalized study plan using
-            your marks, attendance, and subject performance.
-        </p>
+            ">
+                📚 Create a personalized study plan using
+                your marks, attendance, and subject performance.
+            </p>
 
 
-        <label
-            style="
+            <label style="
                 font-size: 13px;
                 color: #ddd;
-            "
-        >
-            Study plan duration
-        </label>
+            ">
+                Study plan duration
+            </label>
 
 
-        <select
-            id="study-plan-days"
-            style="
+            <select id="study-plan-days" style="
                 width: 100%;
                 margin-top: 6px;
                 padding: 9px;
@@ -1016,24 +963,21 @@
                 background: #2b2b3d;
                 color: white;
                 outline: none;
-            "
-        >
+            ">
 
-            <option value="1">1 Day</option>
-            <option value="3">3 Days</option>
-            <option value="5">5 Days</option>
-            <option value="7" selected>7 Days</option>
-            <option value="10">10 Days</option>
-            <option value="14">14 Days</option>
-            <option value="21">21 Days</option>
-            <option value="30">30 Days</option>
+                <option value="1">1 Day</option>
+                <option value="3">3 Days</option>
+                <option value="5">5 Days</option>
+                <option value="7" selected>7 Days</option>
+                <option value="10">10 Days</option>
+                <option value="14">14 Days</option>
+                <option value="21">21 Days</option>
+                <option value="30">30 Days</option>
 
-        </select>
+            </select>
 
 
-        <button
-            onclick="generateStudyPlan()"
-            style="
+            <button onclick="generateStudyPlan()" style="
                 width: 100%;
                 margin-top: 10px;
                 background: #34A853;
@@ -1043,43 +987,36 @@
                 border-radius: 6px;
                 cursor: pointer;
                 font-weight: bold;
-            "
-        >
-            ✨ Generate Study Plan
-        </button>
+            ">
+                ✨ Generate Study Plan
+            </button>
 
 
-        <div
-            id="study-plan-result"
-            style="
+            <div id="study-plan-result" style="
                 height: 220px;
                 overflow-y: auto;
                 margin-top: 10px;
                 font-size: 13px;
                 color: #eee;
                 line-height: 1.5;
-            "
-        >
+            ">
 
-            <p
-                style="
+                <p style="
                     color: #aaa;
                     font-style: italic;
-                "
-            >
-                Your personalized study plan will appear here.
-            </p>
+                ">
+                    Your personalized study plan will appear here.
+                </p>
+
+            </div>
 
         </div>
 
     </div>
 
-</div>
 
-
-<!-- Existing AI Assistant JavaScript -->
-<script src="ai-assistant.js"></script>
-```
+    <!-- Existing AI Assistant JavaScript -->
+    <script src="ai-assistant.js"></script>
 
 </body>
 
