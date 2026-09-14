@@ -4,10 +4,26 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const multer = require("multer");
 const { sql, poolPromise } = require("./db");
 const app = express();
 app.use(cors());
 app.use(express.json());
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 2 * 1024 * 1024
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error("Only JPG, PNG and WEBP images are allowed."));
+        }
+    }
+});
 function auth(roles = []) {
     return (req, res, next) => {
         const header = req.headers["authorization"] || "";
@@ -173,6 +189,94 @@ app.get("/students", auth(["admin"]), async (req, res) => {
             error: "Unable to fetch students",
             details: error.message
         });
+    }
+});
+app.post("/students/:id/photo", auth(["student"]), upload.single("photo"), async (req, res) => {
+    try {
+        const studentId = parseInt(req.params.id);
+
+        if (isNaN(studentId)) {
+            return res.status(400).json({
+                message: "Invalid student ID."
+            });
+        }
+
+        // Student can only upload their own photo
+        if (Number(req.user.id) !== studentId) {
+            return res.status(403).json({
+                message: "You can only upload your own profile photo."
+            });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                message: "Please select an image."
+            });
+        }
+
+        const pool = await poolPromise;
+
+        await pool.request()
+            .input("Student_id", sql.Int, studentId)
+            .input("Profile_Photo", sql.VarBinary(sql.MAX), req.file.buffer)
+            .query(`
+                UPDATE Student
+                SET Profile_Photo = @Profile_Photo
+                WHERE Student_id = @Student_id
+            `);
+
+        res.json({
+            success: true,
+            message: "Profile photo uploaded successfully."
+        });
+
+    } catch (error) {
+        console.error("Profile photo upload error:", error);
+
+        res.status(500).json({
+            message: "Failed to upload profile photo."
+        });
+    }
+});
+app.get("/students/:id/photo", auth(["admin", "teacher", "student"]), async (req, res) => {
+    try {
+        const studentId = parseInt(req.params.id);
+
+        if (isNaN(studentId)) {
+            return res.status(400).send("Invalid student ID.");
+        }
+
+        // Student can only view their own photo
+        if (
+            req.user.role === "student" &&
+            Number(req.user.id) !== studentId
+        ) {
+            return res.status(403).send("Access denied.");
+        }
+
+        const pool = await poolPromise;
+
+        const result = await pool.request()
+            .input("Student_id", sql.Int, studentId)
+            .query(`
+                SELECT Profile_Photo
+                FROM Student
+                WHERE Student_id = @Student_id
+            `);
+
+        if (
+            result.recordset.length === 0 ||
+            !result.recordset[0].Profile_Photo
+        ) {
+            return res.status(404).send("No profile photo found.");
+        }
+
+        res.set("Content-Type", "image/jpeg");
+        res.send(result.recordset[0].Profile_Photo);
+
+    } catch (error) {
+        console.error("Profile photo fetch error:", error);
+        res.status(500).send("Failed to load profile photo.");
     }
 });
 app.post("/ai-assistant", auth(["student"]), async (req, res) => {
