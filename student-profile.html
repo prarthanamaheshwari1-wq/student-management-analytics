@@ -559,12 +559,9 @@
 
                 if (profileImageContainer) {
 
-                    const photoUrl =
-                        `${API_URL}/students/${studentId}/photo?t=${Date.now()}`;
-
                     const photoResponse =
                         await fetch(
-                            photoUrl,
+                            `${API_URL}/students/${studentId}/photo`,
                             {
                                 headers: authHeaders
                             }
@@ -572,12 +569,18 @@
 
                     if (photoResponse.ok) {
 
-                        profileImageContainer.innerHTML = `
-                        <img
-                            src="${photoUrl}"
-                            alt="Student Profile Photo"
-                        >
-                    `;
+                        const photoData =
+                            await photoResponse.json();
+
+                        if (photoData.success && photoData.photo) {
+
+                            profileImageContainer.innerHTML = `
+            <img
+                src="${photoData.photo}"
+                alt="Student Profile Photo"
+            >
+        `;
+                        }
                     }
                 }
 
@@ -719,14 +722,35 @@
 
                 if (imageContainer) {
 
-                    imageContainer.innerHTML = `
+                    const photoResponse =
+                        await fetch(
+                            `${API_URL}/students/${studentId}/photo`,
+                            {
+                                headers: {
+                                    "Authorization":
+                                        `Bearer ${token}`
+                                }
+                            }
+                        );
 
-                    <img
-                        src="${API_URL}/students/${studentId}/photo?t=${Date.now()}"
-                        alt="Student Profile Photo"
-                    >
+                    if (photoResponse.ok) {
 
-                `;
+                        const photoData =
+                            await photoResponse.json();
+
+                        if (
+                            photoData.success &&
+                            photoData.photo
+                        ) {
+
+                            imageContainer.innerHTML = `
+                <img
+                    src="${photoData.photo}"
+                    alt="Student Profile Photo"
+                >
+            `;
+                        }
+                    }
                 }
 
 

@@ -243,16 +243,24 @@ app.post("/students/:id/photo", auth(["student"]), upload.single("photo"), async
 app.get("/students/:id/photo", auth(["admin", "teacher", "student"]), async (req, res) => {
     try {
         const studentId = parseInt(req.params.id);
+
         if (isNaN(studentId)) {
-            return res.status(400).send("Invalid student ID.");
+            return res.status(400).json({
+                message: "Invalid student ID."
+            });
         }
+
         if (
             req.user.role === "student" &&
             Number(req.user.id) !== studentId
         ) {
-            return res.status(403).send("Access denied.");
+            return res.status(403).json({
+                message: "Access denied."
+            });
         }
+
         const pool = await poolPromise;
+
         const result = await pool.request()
             .input("Student_id", sql.Int, studentId)
             .query(`
@@ -260,21 +268,38 @@ app.get("/students/:id/photo", auth(["admin", "teacher", "student"]), async (req
                 FROM Student
                 WHERE Student_id = @Student_id
             `);
+
         if (
             result.recordset.length === 0 ||
             !result.recordset[0].Profile_Photo
         ) {
-            return res.status(404).send("No profile photo found.");
+            return res.status(404).json({
+                message: "No profile photo found."
+            });
         }
+
         const photo = result.recordset[0].Profile_Photo;
+
         const photoType =
             result.recordset[0].Profile_Photo_Type || "image/jpeg";
-        res.set("Content-Type", photoType);
-        res.set("Cache-Control", "no-cache");
-        res.send(photo);
+
+        const base64Photo = photo.toString("base64");
+
+        res.json({
+            success: true,
+            photo: `data:${photoType};base64,${base64Photo}`
+        });
+
     } catch (error) {
-        console.error("Profile photo fetch error:", error);
-        res.status(500).send("Failed to load profile photo.");
+
+        console.error(
+            "Profile photo fetch error:",
+            error
+        );
+
+        res.status(500).json({
+            message: "Failed to load profile photo."
+        });
     }
 });
 app.post("/ai-assistant", auth(["student"]), async (req, res) => {
