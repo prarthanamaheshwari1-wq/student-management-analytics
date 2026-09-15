@@ -443,7 +443,7 @@ app.post("/ai-assistant", auth(["student"]), async (req, res) => {
             averageMarks,
             subjectAverages
         };
-        const model = "gemini-3.8-flash";
+        const model = "gemini-3.5-flash";
         let response;
         let data;
         for (let attempt = 1; attempt <= 3; attempt++) {
@@ -736,7 +736,7 @@ app.post("/ai-study-plan", auth(["student"]), async (req, res) => {
                 marksRecords
         };
         const model =
-            "gemini-3.8-flash";
+            "gemini-3.5-flash";
         let response;
         let data;
         for (
